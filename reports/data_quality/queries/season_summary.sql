@@ -1,0 +1,13 @@
+WITH season_summary(season, rows, target_rate, missing_asof_cells) AS (
+    VALUES
+        (2019, 237413, 0.5646700054335694, 77308),
+        (2020, 244087, 0.5327116970588356, 24260),
+        (2021, 247088, 0.5327616072006734, 23382),
+        (2022, 247472, 0.5289204435249241, 18526),
+        (2023, 245525, 0.49995723449750534, 16978),
+        (2024, 253507, 0.4861049201797189, 22652)
+)
+SELECT season, rows, target_rate, missing_asof_cells
+FROM season_summary
+ORDER BY season;
+

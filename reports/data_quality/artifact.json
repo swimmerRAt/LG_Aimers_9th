@@ -1,0 +1,240 @@
+{
+  "surface": "report",
+  "manifest": {
+    "version": 1,
+    "surface": "report",
+    "title": "LG Aimers 데이터·기준선 준비 보고서",
+    "description": "데이터 품질, 시간 드리프트, forward validation 및 제출 재현성의 초기 기술 점검",
+    "generatedAt": "2026-08-15T10:30:00Z",
+    "filters": [],
+    "cards": [
+      {
+        "id": "train_rows_card",
+        "description": "2019~2024 학습 투구 수와 전체 도메인 규칙 위반 수",
+        "dataset": "headline_train",
+        "sourceId": "season_summary_sql",
+        "metrics": [
+          {"label": "Train rows", "field": "train_rows", "format": "compact"},
+          {"label": "Domain violations", "field": "domain_violations", "format": "number"}
+        ]
+      },
+      {
+        "id": "target_drift_card",
+        "description": "2019년 대비 2024년 제구 성공률 변화",
+        "dataset": "headline_train",
+        "sourceId": "season_summary_sql",
+        "metrics": [
+          {"label": "2024 target rate", "field": "target_rate_2024", "format": "percent"},
+          {"label": "Change vs 2019", "field": "target_rate_change", "format": "percent", "signed": true}
+        ]
+      },
+      {
+        "id": "trackman_exception_card",
+        "description": "Trackman 179만 행 중 공식 카운트 범위를 벗어난 행",
+        "dataset": "headline_trackman",
+        "sourceId": "quality_checks_sql",
+        "metrics": [
+          {"label": "Count exceptions", "field": "count_exceptions", "format": "number"},
+          {"label": "Affected share", "field": "affected_rate", "format": "percent"}
+        ]
+      },
+      {
+        "id": "recent_score_card",
+        "description": "가장 최근 2024 forward holdout의 최고 검증 점수",
+        "dataset": "headline_model",
+        "sourceId": "model_validation_sql",
+        "metrics": [
+          {"label": "Best 2024 score", "field": "best_2024_score", "format": "number"},
+          {"label": "Model", "field": "best_2024_model"}
+        ]
+      }
+    ],
+    "charts": [
+      {
+        "id": "season_target_rate_chart",
+        "title": "시즌별 제구 성공률",
+        "subtitle": "2019~2024 학습 데이터, 각 시즌 23.7만~25.4만 투구",
+        "type": "bar",
+        "dataset": "season_summary",
+        "sourceId": "season_summary_sql",
+        "valueFormat": "percent",
+        "encodings": {
+          "x": {"field": "season", "type": "nominal", "label": "Season"},
+          "y": {"field": "target_rate", "type": "quantitative", "label": "Control success rate", "format": "percent"},
+          "tooltip": [
+            {"field": "rows", "type": "quantitative", "label": "Rows", "format": "number"},
+            {"field": "missing_asof_cells", "type": "quantitative", "label": "Missing asof cells", "format": "number"}
+          ]
+        }
+      },
+      {
+        "id": "forward_score_chart",
+        "title": "모델별 forward validation 점수",
+        "subtitle": "각 연도 이전 시즌만 학습; Brier 기반 대회 점수, 0이 하한",
+        "type": "bar",
+        "dataset": "model_validation",
+        "sourceId": "model_validation_sql",
+        "valueFormat": "number",
+        "options": {"grouping": "grouped"},
+        "encodings": {
+          "x": {"field": "validation_season", "type": "nominal", "label": "Validation season"},
+          "y": {"field": "competition_score", "type": "quantitative", "label": "Competition score", "format": "number"},
+          "color": {"field": "model", "type": "nominal", "label": "Model"},
+          "tooltip": [
+            {"field": "brier", "type": "quantitative", "label": "Brier", "format": "number"},
+            {"field": "actual_rate", "type": "quantitative", "label": "Actual rate", "format": "percent"},
+            {"field": "predicted_rate", "type": "quantitative", "label": "Predicted mean", "format": "percent"},
+            {"field": "validation_rows", "type": "quantitative", "label": "Rows", "format": "number"}
+          ]
+        }
+      }
+    ],
+    "tables": [
+      {
+        "id": "quality_checks_table",
+        "title": "데이터 품질 검사 결과",
+        "subtitle": "메인 데이터 전체와 Trackman 전체를 청크 단위 검사",
+        "dataset": "quality_checks",
+        "sourceId": "quality_checks_sql",
+        "defaultSort": {"field": "failed_rows", "direction": "desc"},
+        "columns": [
+          {"field": "check_name", "label": "Check", "type": "text"},
+          {"field": "dataset", "label": "Dataset", "type": "text"},
+          {"field": "failed_rows", "label": "Failed rows", "format": "number"},
+          {"field": "affected_rate", "label": "Affected share", "format": "percent"},
+          {"field": "severity", "label": "Severity", "type": "text"},
+          {"field": "interpretation", "label": "Interpretation", "type": "text"}
+        ]
+      },
+      {
+        "id": "model_metrics_table",
+        "title": "Forward validation 상세",
+        "subtitle": "2022~2024 각 holdout의 Brier, 점수, 실제·예측 평균",
+        "dataset": "model_validation",
+        "sourceId": "model_validation_sql",
+        "defaultSort": {"field": "validation_season", "direction": "asc"},
+        "columns": [
+          {"field": "validation_season", "label": "Season", "type": "number"},
+          {"field": "model", "label": "Model", "type": "text"},
+          {"field": "brier", "label": "Brier", "format": "number"},
+          {"field": "competition_score", "label": "Score", "format": "number"},
+          {"field": "actual_rate", "label": "Actual rate", "format": "percent"},
+          {"field": "predicted_rate", "label": "Predicted mean", "format": "percent"},
+          {"field": "validation_rows", "label": "Rows", "format": "number"}
+        ]
+      }
+    ],
+    "sources": [
+      {"id": "season_summary_sql", "label": "Season summary query", "path": "reports/data_quality/queries/season_summary.sql"},
+      {"id": "quality_checks_sql", "label": "Quality checks query", "path": "reports/data_quality/queries/quality_checks.sql"},
+      {"id": "model_validation_sql", "label": "Forward validation query", "path": "reports/data_quality/queries/model_validation.sql"}
+    ],
+    "blocks": [
+      {"id": "title", "type": "markdown", "body": "# LG Aimers 데이터·기준선 준비 보고서"},
+      {"id": "technical_summary", "type": "markdown", "body": "## 기술 요약\n\n- **메인 데이터는 기준선 학습에 사용 가능하다.** 147.5만 행에서 키 중복과 핵심 도메인 규칙 위반이 0건이었다.\n- **시간 드리프트가 가장 큰 초기 위험이다.** 제구 성공률은 2019년 56.47%에서 2024년 48.61%로 7.86%p 하락했다.\n- **2024만 보면 HistGB가 수료 기준을 넘지만 최종 확정은 이르다.** 2024 점수는 576.62였으나 2023에는 RF와 HistGB 모두 0점이었다.\n- **제출 재현성은 확보했다.** 평가 버전 환경에서 샘플 추론, 엄격한 출력 검사, 3.76MiB ZIP 빌드가 통과했다."},
+      {"id": "headline_metrics", "type": "metric-strip", "cardIds": ["train_rows_card", "target_drift_card", "trackman_exception_card", "recent_score_card"]},
+      {"id": "target_drift_finding", "type": "markdown", "sourceId": "season_summary_sql", "body": "## 타깃률 하락 때문에 랜덤 분할은 신뢰할 수 없다\n\n시즌당 표본은 23.7만~25.4만 행으로 충분하지만 타깃률은 같은 방향으로 크게 움직였다. 무작위 행 분할은 미래 시즌의 평균 수준을 학습 데이터에 섞으므로, 실제 2025 일반화보다 낙관적인 Brier를 만들 수 있다."},
+      {"id": "target_drift_chart_block", "type": "chart", "chartId": "season_target_rate_chart"},
+      {"id": "data_quality_finding", "type": "markdown", "body": "## 메인 데이터는 깨끗하지만 Trackman 조인은 보류해야 한다\n\n공식 `asof_*` 결측은 최대 약 1.98%로 cold-start 성격이며 전처리기로 처리할 수 있다. Trackman에는 카운트 예외 97행만 있어 품질 영향은 낮지만, 메인 투수 ID 792개와 Trackman 투수 ID 906개의 직접 교집합이 0개다. 공식 매핑 또는 검증 가능한 연결 키 없이 선수 단위 집계를 붙이면 잘못된 조인이 된다."},
+      {"id": "quality_checks_table_block", "type": "table", "tableId": "quality_checks_table"},
+      {"id": "model_instability_finding", "type": "markdown", "sourceId": "model_validation_sql", "body": "## 학습 모델의 개선은 아직 시즌별로 안정적이지 않다\n\n2022에는 RF와 HistGB가 2,000점 이상이었고 2024에는 HistGB가 576.62로 수료 기준을 넘었다. 그러나 2023에는 두 모델 모두 상수 기준보다 Brier가 나빠 0점이었다. 2023과 2024에서 예측 평균이 실제보다 각각 약 2.0%p와 1.2~1.5%p 높아, 확률 수준의 시간 보정이 우선 과제다."},
+      {"id": "forward_score_chart_block", "type": "chart", "chartId": "forward_score_chart"},
+      {"id": "model_metrics_table_block", "type": "table", "tableId": "model_metrics_table"},
+      {"id": "scope_definitions", "type": "markdown", "body": "## 범위와 지표 정의\n\n- 분석 단위는 투구 1행이다.\n- Brier는 예측 확률과 0/1 정답 차이의 제곱 평균이며 낮을수록 좋다.\n- 대회 점수는 각 validation 시즌의 실제 성공률로 정규화한 Brier skill score다.\n- forward split은 validation 시즌보다 이전 시즌만 학습에 사용한다.\n- 배포 test 5행은 형식 검사용이며 실제 2025 분포 판단에는 사용하지 않는다."},
+      {"id": "methodology", "type": "markdown", "body": "## 검사 및 검증 방법\n\n전체 CSV를 청크 단위로 읽어 스키마, 키 중복, 결측, 타깃·카운트·주자·점수·확률 범위를 검사했다. 기준선은 동일한 47개 공식 피처와 fold 학습 구간에서만 적합한 전처리를 사용했다. 2022·2023·2024를 각각 holdout으로 두고 Constant, RandomForest, HistGradientBoosting을 비교했으며, 모든 OOF 확률을 저장했다."},
+      {"id": "limitations", "type": "markdown", "body": "## 아직 최종 모델을 확정할 수 없는 이유\n\n실제 2025 test는 비공개이므로 최근 타깃률 하락이 같은 폭으로 이어지는지 알 수 없다. 현재 트리 모델은 2023 급변에 취약했고, 2024 단일 성능과 3개 split 평균이 서로 다른 모델을 선호한다. RF–HistGB OOF 평균은 Brier를 약 0.00001만 개선해 복잡도 증가를 정당화하지 못했다."},
+      {"id": "next_steps", "type": "markdown", "body": "## 다음 실험 순서\n\n1. OOF 기반 확률 수축, 최근 시즌 가중, intercept 보정을 과거→미래 순서로 검증한다.\n2. 2023 실패 원인을 선수 cold-start, 팀·상황, 결측 구간별로 분해한다.\n3. 안정화 후에만 공식 `asof_*` 상호작용과 평활화 피처를 ablation으로 추가한다.\n4. 최종 후보 2개 이하를 실제 245,789행 규모로 스트레스 테스트한다."},
+      {"id": "further_questions", "type": "markdown", "body": "## 확인이 필요한 질문\n\n- 2025 타깃률 드리프트에 대한 규칙상 허용 가능한 사전 정보가 있는가?\n- 메인 익명 선수 ID와 Trackman ID 사이의 공식 매핑이 별도로 제공되는가?\n- 외부 데이터 사용 범위와 라이선스 기록 요건은 규칙 탭에서 어떻게 정의되는가?"}
+    ]
+  },
+  "snapshot": {
+    "version": 1,
+    "generatedAt": "2026-08-15T10:30:00Z",
+    "status": "ready",
+    "datasets": {
+      "headline_train": [
+        {"train_rows": 1475092, "domain_violations": 0, "target_rate_2024": 0.4861049201797189, "target_rate_change": -0.07856508525385048}
+      ],
+      "headline_trackman": [
+        {"count_exceptions": 97, "affected_rate": 0.00005409692160631049}
+      ],
+      "headline_model": [
+        {"best_2024_score": 576.6174506563359, "best_2024_model": "HistGB"}
+      ],
+      "season_summary": [
+        {"season": "2019", "rows": 237413, "target_rate": 0.5646700054335694, "missing_asof_cells": 77308},
+        {"season": "2020", "rows": 244087, "target_rate": 0.5327116970588356, "missing_asof_cells": 24260},
+        {"season": "2021", "rows": 247088, "target_rate": 0.5327616072006734, "missing_asof_cells": 23382},
+        {"season": "2022", "rows": 247472, "target_rate": 0.5289204435249241, "missing_asof_cells": 18526},
+        {"season": "2023", "rows": 245525, "target_rate": 0.49995723449750534, "missing_asof_cells": 16978},
+        {"season": "2024", "rows": 253507, "target_rate": 0.4861049201797189, "missing_asof_cells": 22652}
+      ],
+      "model_validation": [
+        {"model": "Constant", "validation_season": "2022", "validation_rows": 247472, "actual_rate": 0.5289204435249241, "predicted_rate": 0.5431423520563061, "brier": 0.24936587062859672, "competition_score": 0.0, "fit_seconds": 0.0426503749999938, "inference_seconds": 0.011504291000164812},
+        {"model": "Constant", "validation_season": "2023", "validation_rows": 245525, "actual_rate": 0.49995723449750534, "predicted_rate": 0.5395365039034485, "brier": 0.2515665167378201, "competition_score": 0.0, "fit_seconds": 0.05517329200029053, "inference_seconds": 0.01177449999977398},
+        {"model": "Constant", "validation_season": "2024", "validation_rows": 253507, "actual_rate": 0.4861049201797189, "predicted_rate": 0.5315815109059132, "brier": 0.25187504706086583, "competition_score": 0.0, "fit_seconds": 0.06996495800012781, "inference_seconds": 0.011727457999768376},
+        {"model": "RandomForest", "validation_season": "2022", "validation_rows": 247472, "actual_rate": 0.5289204435249241, "predicted_rate": 0.530335, "brier": 0.243990458194977, "competition_score": 2076.205989302882, "fit_seconds": 15.638439625000046, "inference_seconds": 0.20478604200025075},
+        {"model": "RandomForest", "validation_season": "2023", "validation_rows": 245525, "actual_rate": 0.49995723449750534, "predicted_rate": 0.520333, "brier": 0.2516607229076518, "competition_score": 0.0, "fit_seconds": 22.513101666999773, "inference_seconds": 0.2095441659998869},
+        {"model": "RandomForest", "validation_season": "2024", "validation_rows": 253507, "actual_rate": 0.4861049201797189, "predicted_rate": 0.501218, "brier": 0.2487672812064766, "competition_score": 416.1796327303513, "fit_seconds": 29.611074542000097, "inference_seconds": 0.2385868749997826},
+        {"model": "HistGB", "validation_season": "2022", "validation_rows": 247472, "actual_rate": 0.5289204435249241, "predicted_rate": 0.531213, "brier": 0.24367116498966546, "competition_score": 2204.3519926230438, "fit_seconds": 8.424824125000214, "inference_seconds": 0.585331750000023},
+        {"model": "HistGB", "validation_season": "2023", "validation_rows": 245525, "actual_rate": 0.49995723449750534, "predicted_rate": 0.521869, "brier": 0.253600187494179, "competition_score": 0.0, "fit_seconds": 10.993031415999667, "inference_seconds": 0.5640707910001765},
+        {"model": "HistGB", "validation_season": "2024", "validation_rows": 253507, "actual_rate": 0.4861049201797189, "predicted_rate": 0.497993, "brier": 0.24836649642416006, "competition_score": 576.6174506563359, "fit_seconds": 13.648167916999682, "inference_seconds": 0.5867389160002858}
+      ],
+      "quality_checks": [
+        {"check_name": "Train row_id duplicates", "dataset": "train.csv", "failed_rows": 0, "affected_rate": 0.0, "severity": "Pass", "interpretation": "투구 단위 키가 고유함"},
+        {"check_name": "Train domain violations", "dataset": "train.csv", "failed_rows": 0, "affected_rate": 0.0, "severity": "Pass", "interpretation": "타깃·카운트·주자·점수·비율 규칙 위반 없음"},
+        {"check_name": "Train/test feature schema mismatch", "dataset": "train.csv + test.csv", "failed_rows": 0, "affected_rate": 0.0, "severity": "Pass", "interpretation": "47개 평가 피처와 순서가 일치함"},
+        {"check_name": "Trackman ID duplicates", "dataset": "trackman_history.csv", "failed_rows": 0, "affected_rate": 0.0, "severity": "Pass", "interpretation": "Trackman 행 키가 고유함"},
+        {"check_name": "Trackman count exceptions", "dataset": "trackman_history.csv", "failed_rows": 97, "affected_rate": 0.00005409692160631049, "severity": "Low", "interpretation": "파생 집계 전 제외 권장"},
+        {"check_name": "Direct pitcher ID overlap", "dataset": "train.csv + trackman_history.csv", "failed_rows": 0, "affected_rate": null, "severity": "High", "interpretation": "공식 매핑 없이는 선수 단위 직접 조인 금지"}
+      ]
+    }
+  },
+  "sources": [
+    {
+      "id": "season_summary_sql",
+      "label": "Season summary query",
+      "path": "reports/data_quality/queries/season_summary.sql",
+      "query": {
+        "engine": "sqlite",
+        "sql": "WITH season_summary(season, rows, target_rate, missing_asof_cells) AS (VALUES (2019,237413,0.5646700054335694,77308),(2020,244087,0.5327116970588356,24260),(2021,247088,0.5327616072006734,23382),(2022,247472,0.5289204435249241,18526),(2023,245525,0.49995723449750534,16978),(2024,253507,0.4861049201797189,22652)) SELECT * FROM season_summary ORDER BY season",
+        "description": "Executed audit output summarized by season.",
+        "language": "sql",
+        "executed_at": "2026-08-15T10:20:00Z",
+        "tables_used": ["data/train.csv", "artifacts/data_quality/report.json"],
+        "filters": ["season between 2019 and 2024", "all 1,475,092 train rows"],
+        "metric_definitions": ["target_rate = mean(control_success) within season", "missing_asof_cells = total null cells across official asof rate features"]
+      }
+    },
+    {
+      "id": "quality_checks_sql",
+      "label": "Quality checks query",
+      "path": "reports/data_quality/queries/quality_checks.sql",
+      "query": {
+        "engine": "sqlite",
+        "sql": "WITH quality_checks(check_name,dataset,failed_rows,affected_rate,severity) AS (VALUES ('Train row_id duplicates','train.csv',0,0.0,'Pass'),('Train domain violations','train.csv',0,0.0,'Pass'),('Train/test feature schema mismatch','train.csv + test.csv',0,0.0,'Pass'),('Trackman ID duplicates','trackman_history.csv',0,0.0,'Pass'),('Trackman count exceptions','trackman_history.csv',97,0.00005409692160631049,'Low'),('Direct pitcher ID overlap','train.csv + trackman_history.csv',0,NULL,'High')) SELECT * FROM quality_checks ORDER BY failed_rows DESC, check_name",
+        "description": "Bounded results from full-file uniqueness, validity, consistency, and linkage checks.",
+        "language": "sql",
+        "executed_at": "2026-08-15T10:20:00Z",
+        "tables_used": ["data/train.csv", "data/test.csv", "data/trackman_history.csv", "artifacts/data_quality/report.json"],
+        "filters": ["all source rows", "Trackman dates parsed as mixed M/D/YYYY and YYYY-MM-DD"],
+        "metric_definitions": ["affected_rate = failed_rows / dataset row count", "domain violations cover target, count, runner, score, expectancy, and asof rate rules"]
+      }
+    },
+    {
+      "id": "model_validation_sql",
+      "label": "Forward validation query",
+      "path": "reports/data_quality/queries/model_validation.sql",
+      "query": {
+        "engine": "sqlite",
+        "sql": "WITH model_validation(model,validation_season,brier,competition_score) AS (VALUES ('Constant',2022,0.24936587062859672,0.0),('RandomForest',2022,0.243990458194977,2076.205989302882),('HistGB',2022,0.24367116498966546,2204.3519926230438),('Constant',2023,0.2515665167378201,0.0),('RandomForest',2023,0.2516607229076518,0.0),('HistGB',2023,0.253600187494179,0.0),('Constant',2024,0.25187504706086583,0.0),('RandomForest',2024,0.2487672812064766,416.1796327303513),('HistGB',2024,0.24836649642416006,576.6174506563359)) SELECT * FROM model_validation ORDER BY validation_season, model",
+        "description": "Reviewed OOF metrics from fixed forward season splits.",
+        "language": "sql",
+        "executed_at": "2026-08-15T10:25:00Z",
+        "tables_used": ["artifacts/forward_cv_2022_2024/metrics.csv", "artifacts/forward_cv_2022_2024/oof_predictions.csv"],
+        "filters": ["validation seasons 2022, 2023, 2024", "training rows strictly earlier than validation season", "random_state = 42"],
+        "metric_definitions": ["Brier = mean((prediction - target)^2)", "competition_score = max(0, 100000 * (1 - Brier / (r * (1-r)))) where r is validation target rate"]
+      }
+    }
+  ]
+}

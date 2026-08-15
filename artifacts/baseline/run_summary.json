@@ -1,0 +1,16 @@
+{
+  "selected_model": "random_forest",
+  "mean_brier_by_model": {
+    "random_forest": 0.2487672812064766,
+    "constant": 0.25187504706086583
+  },
+  "full_fit_seconds": 34.795378249999885,
+  "model_output": "model/final_model.pkl",
+  "versions": {
+    "python": "3.11.15",
+    "pandas": "2.0.3",
+    "numpy": "1.26.4",
+    "scikit_learn": "1.8.0",
+    "joblib": "1.5.3"
+  }
+}
