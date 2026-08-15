@@ -8,17 +8,21 @@ import zipfile
 from pathlib import Path
 
 
-def collect_files(root: Path) -> list[tuple[Path, Path]]:
+def collect_files(root: Path, model_path: Path | None = None) -> list[tuple[Path, Path]]:
     required = [root / "script.py", root / "requirements.txt"]
     missing = [str(path) for path in required if not path.is_file()]
     model_dir = root / "model"
     # Keep the ZIP minimal and mirror script.py's model preference.
-    preferred_model = model_dir / "final_model.pkl"
+    preferred_model = model_path if model_path is not None else model_dir / "final_model.pkl"
     legacy_model = model_dir / "rf.pkl"
+    support_files = sorted(
+        path for path in model_dir.rglob("*")
+        if path.is_file() and path.suffix != ".pkl" and "__pycache__" not in path.parts
+    )
     if preferred_model.is_file():
-        model_files = [preferred_model]
+        model_files = [preferred_model, *support_files]
     elif legacy_model.is_file():
-        model_files = [legacy_model]
+        model_files = [legacy_model, *support_files]
     else:
         model_files = []
     if not model_files:
@@ -29,11 +33,17 @@ def collect_files(root: Path) -> list[tuple[Path, Path]]:
     for path in paths:
         if path.is_symlink():
             raise ValueError(f"symlinks are not allowed in submission: {path}")
-    return [(path, path.relative_to(root)) for path in paths]
+    collected = []
+    for path in paths:
+        if path == preferred_model:
+            collected.append((path, Path("model/final_model.pkl")))
+        else:
+            collected.append((path, path.relative_to(root)))
+    return collected
 
 
-def build_zip(root: Path, output: Path) -> None:
-    files = collect_files(root)
+def build_zip(root: Path, output: Path, model_path: Path | None = None) -> None:
+    files = collect_files(root, model_path)
     with zipfile.ZipFile(output, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=6) as archive:
         for source, relative in files:
             archive.write(source, relative.as_posix())
@@ -51,8 +61,10 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--root", type=Path, default=Path.cwd())
     parser.add_argument("--output", type=Path, default=Path("submit.zip"))
+    parser.add_argument("--model-path", type=Path)
     args = parser.parse_args()
-    build_zip(args.root.resolve(), args.output.resolve())
+    model_path = args.model_path.resolve() if args.model_path is not None else None
+    build_zip(args.root.resolve(), args.output.resolve(), model_path)
 
 
 if __name__ == "__main__":

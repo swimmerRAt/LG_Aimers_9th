@@ -70,4 +70,3 @@ def make_model(name: str, feature_columns: list[str], random_state: int = 42):
     else:
         raise ValueError(f"unknown model: {name}")
     return Pipeline([("pre", preprocessor), ("clf", classifier)])
-

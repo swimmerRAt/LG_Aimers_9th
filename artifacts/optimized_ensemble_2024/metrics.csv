@@ -1,0 +1,2 @@
+model,validation_season,train_rows,validation_rows,validation_target_rate,prediction_mean,brier,competition_score,diagnostic_optimal_slope,diagnostic_optimal_intercept,diagnostic_calibrated_brier,fit_seconds,inference_seconds
+optimized_ensemble,2024,1221585,253507,0.4861049201797189,0.49503364662781657,0.24805763466941116,700.257639004509,1.1307098213969444,-0.07363448598431466,0.24795313977936462,134.7289825830003,0.9026981249999153

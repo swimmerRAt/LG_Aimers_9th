@@ -8,3 +8,6 @@ output/
 submit.zip
 artifacts/oof_*.csv
 /artifacts/forward_cv_2022_2024/oof_predictions.csv
+/artifacts/**/oof_predictions.csv
+/artifacts/submissions/*.zip
+/artifacts/advanced_2024/
