@@ -1,0 +1,18 @@
+{
+  "selected_model": "histgb",
+  "mean_brier_by_model": {
+    "histgb": 0.24836649642416006,
+    "random_forest": 0.2487672812064766,
+    "logistic": 0.24962087725371868,
+    "constant": 0.25187504706086583
+  },
+  "full_fit_seconds": 15.687706458999855,
+  "model_output": "model/final_model.pkl",
+  "versions": {
+    "python": "3.11.15",
+    "pandas": "2.0.3",
+    "numpy": "1.26.4",
+    "scikit_learn": "1.8.0",
+    "joblib": "1.5.3"
+  }
+}
