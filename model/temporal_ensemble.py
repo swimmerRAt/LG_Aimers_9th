@@ -23,6 +23,7 @@ class TemporalWindowEnsemble(BaseEstimator, ClassifierMixin):
         component_weights=(0.25, 0.25, 0.25, 0.25),
         time_decay: float = 0.8,
         hist_weight: float = 0.45,
+        hist_max_iter: int = 300,
         n_estimators: int = 160,
         random_state: int = 42,
         smoothing_lambdas=(),
@@ -30,6 +31,7 @@ class TemporalWindowEnsemble(BaseEstimator, ClassifierMixin):
         self.component_weights = component_weights
         self.time_decay = time_decay
         self.hist_weight = hist_weight
+        self.hist_max_iter = hist_max_iter
         self.n_estimators = n_estimators
         self.random_state = random_state
         self.smoothing_lambdas = smoothing_lambdas
@@ -68,6 +70,7 @@ class TemporalWindowEnsemble(BaseEstimator, ClassifierMixin):
     def _make_base_model(self, component_index: int) -> OptimizedBaseballEnsemble:
         return OptimizedBaseballEnsemble(
             hist_weight=self.hist_weight,
+            hist_max_iter=self.hist_max_iter,
             n_estimators=self.n_estimators,
             random_state=self.random_state,
             smoothing_lambdas=self.smoothing_lambdas,

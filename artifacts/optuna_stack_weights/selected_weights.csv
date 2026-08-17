@@ -1,0 +1,3 @@
+variant,trials,development_objective,official_only_objective,development_objective_delta,official_weight,catboost_weight,residual_weight
+without_mapping,1000,1.0032127135022033,1.0045631841711506,-0.0013504706689473345,0.5,0.5,0.0
+with_mapping,1000,1.003285005096877,1.0045631841711506,-0.0012781790742737442,0.5,0.5,0.0

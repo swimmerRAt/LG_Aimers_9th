@@ -1,0 +1,114 @@
+{
+  "status": "keep_official_852_model",
+  "official_leaderboard_baseline_score": 852.1984993386,
+  "experiment_scope": "change HistGB max_iter inside every temporal HistGB45/ExtraTrees55 component; keep ExtraTrees=160, temporal weights, rolling corrections and logit shift fixed",
+  "selection_seasons": [
+    2022,
+    2023
+  ],
+  "outer_diagnostic_season": 2024,
+  "outer_is_reused_not_one_shot": true,
+  "iteration_candidates": [
+    50,
+    100,
+    150,
+    200,
+    250,
+    300,
+    350
+  ],
+  "official_hist_max_iter": 300,
+  "selected_hist_max_iter": 50,
+  "component_weights": {
+    "full": 0.6673418251272106,
+    "recent_3": 0.12835508472002655,
+    "recent_2": 0.2043030901527629
+  },
+  "hist_weight": 0.45,
+  "extra_trees_weight": 0.55,
+  "extra_trees_estimators": 160,
+  "fixed_final_logit_shift": -0.0461,
+  "development_gate": "no Brier degradation in either 2022 or 2023",
+  "baseline_reconstruction_equivalence": {
+    "max_absolute_probability_difference": 4.440892098500626e-16,
+    "mean_absolute_probability_difference": 2.6144897938508106e-17,
+    "brier_difference": 0.0
+  },
+  "candidate_selection": [
+    {
+      "hist_max_iter": 50,
+      "robust_objective": 1.003745199667711,
+      "maximum_fold_brier_delta": -2.1139609886478006e-05,
+      "all_development_folds_non_degraded": true,
+      "selected": true
+    },
+    {
+      "hist_max_iter": 100,
+      "robust_objective": 1.0043526075952445,
+      "maximum_fold_brier_delta": -3.7820644585712104e-05,
+      "all_development_folds_non_degraded": true,
+      "selected": false
+    },
+    {
+      "hist_max_iter": 150,
+      "robust_objective": 1.0044413857033567,
+      "maximum_fold_brier_delta": -2.8469383911572388e-05,
+      "all_development_folds_non_degraded": true,
+      "selected": false
+    },
+    {
+      "hist_max_iter": 200,
+      "robust_objective": 1.0044807175807262,
+      "maximum_fold_brier_delta": -1.8869613470612334e-05,
+      "all_development_folds_non_degraded": true,
+      "selected": false
+    },
+    {
+      "hist_max_iter": 250,
+      "robust_objective": 1.0045220462503575,
+      "maximum_fold_brier_delta": -9.894599469706389e-06,
+      "all_development_folds_non_degraded": true,
+      "selected": false
+    },
+    {
+      "hist_max_iter": 300,
+      "robust_objective": 1.0045631841711506,
+      "maximum_fold_brier_delta": 0.0,
+      "all_development_folds_non_degraded": true,
+      "selected": false
+    },
+    {
+      "hist_max_iter": 350,
+      "robust_objective": 1.004603348049559,
+      "maximum_fold_brier_delta": 1.1183016534965784e-05,
+      "all_development_folds_non_degraded": false,
+      "selected": false
+    }
+  ],
+  "outer_metrics": [
+    {
+      "model": "official_852_baseline",
+      "hist_max_iter": 300,
+      "brier": 0.2480239578589654,
+      "competition_score": 713.7387745690837,
+      "prediction_mean": 0.47934359733268095
+    },
+    {
+      "model": "selected_base_histgb_candidate",
+      "hist_max_iter": 50,
+      "brier": 0.24814382783821406,
+      "competition_score": 665.7537243525246,
+      "prediction_mean": 0.4799774208470004
+    }
+  ],
+  "outer_brier_delta": 0.00011986997924867682,
+  "outer_paired_comparison": {
+    "paired_brier_delta": 0.00011986997924875298,
+    "paired_standard_error": 1.5614523761391845e-05,
+    "paired_ci95_low": 8.926551267642496e-05,
+    "paired_ci95_high": 0.000150474445821081
+  },
+  "diagnostic_improved": false,
+  "adopted": false,
+  "adoption_note": "The official 852 model stays unchanged. The reused 2024 diagnostic cannot authorize promotion; a worse candidate is rejected immediately."
+}

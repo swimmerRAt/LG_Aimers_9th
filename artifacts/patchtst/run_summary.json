@@ -1,0 +1,92 @@
+{
+  "status": "rejected_keep_official_852_model",
+  "official_leaderboard_baseline_score": 852.1984993386,
+  "upstream_repository": "https://github.com/yuqinie98/PatchTST",
+  "upstream_commit": "204c21efe0b39603ad6e2ca640ef5896646ab1a9",
+  "upstream_license": "Apache-2.0",
+  "algorithm": "RevIN + overlapping patches + shared channel-independent projection and residual-attention Transformer encoder + flatten forecast head",
+  "adaptation": "March-October monthly rates for overall/game_type F/game_type R channels; small model dimensions because only 24-40 monthly slots precede validation",
+  "model_parameters": 5406,
+  "seeds": [
+    17,
+    29,
+    43
+  ],
+  "selection_seasons": [
+    2022,
+    2023
+  ],
+  "outer_diagnostic_season": 2024,
+  "outer_is_reused_not_one_shot": true,
+  "official_development_objective": 1.0045631841711506,
+  "selected_group_mix": 0.0,
+  "selected_strength": 0.40963626702030387,
+  "selected_development_objective": 1.004391849658578,
+  "selection_passed": false,
+  "season_metrics": [
+    {
+      "validation_season": 2022,
+      "official_brier": 0.2435622461405432,
+      "candidate_brier": 0.24360213590748292,
+      "candidate_minus_official_brier": 3.988976693972135e-05,
+      "official_score": 2248.0657797286362,
+      "candidate_score": 2232.0563121870027,
+      "target_mean": 0.5289204435249241,
+      "official_prediction_mean": 0.5182892285287838,
+      "candidate_prediction_mean": 0.515678658942774,
+      "selected_offset_mean": -0.02611012690809572
+    },
+    {
+      "validation_season": 2023,
+      "official_brier": 0.2537378949304638,
+      "candidate_brier": 0.2536632331701746,
+      "candidate_minus_official_brier": -7.466176028919635e-05,
+      "official_score": 0.0,
+      "candidate_score": 0.0,
+      "target_mean": 0.49995723449750534,
+      "official_prediction_mean": 0.5098240143075439,
+      "candidate_prediction_mean": 0.5026641895677394,
+      "selected_offset_mean": -0.07137089730466217
+    },
+    {
+      "validation_season": 2024,
+      "official_brier": 0.2480239578589654,
+      "candidate_brier": 0.2485805001217587,
+      "candidate_minus_official_brier": 0.0005565422627933081,
+      "official_score": 713.7387745690837,
+      "candidate_score": 490.9498111008492,
+      "target_mean": 0.4861049201797189,
+      "official_prediction_mean": 0.47934359733268095,
+      "candidate_prediction_mean": 0.46147819191335415,
+      "selected_offset_mean": -0.17614831958388535
+    }
+  ],
+  "paired_comparisons": {
+    "2022": {
+      "paired_brier_delta": 3.9889766939759866e-05,
+      "paired_standard_error": 6.154362383362434e-06,
+      "paired_ci95_low": 2.7827216668369494e-05,
+      "paired_ci95_high": 5.195231721115024e-05
+    },
+    "2023": {
+      "paired_brier_delta": -7.466176028916892e-05,
+      "paired_standard_error": 1.5356801440473956e-05,
+      "paired_ci95_low": -0.00010476109111249787,
+      "paired_ci95_high": -4.456242946583997e-05
+    },
+    "2024": {
+      "paired_brier_delta": 0.000556542262793362,
+      "paired_standard_error": 3.564182194114849e-05,
+      "paired_ci95_low": 0.00048668429178871095,
+      "paired_ci95_high": 0.000626400233798013
+    }
+  },
+  "outer_improved": false,
+  "adopted": false,
+  "adoption_note": "The official model and ZIP remain unchanged. PatchTST is retained only as an experimental branch unless development and outer diagnostics both improve.",
+  "limitations": [
+    "only 24-40 regularized monthly slots precede each validation season",
+    "months without games are filled by the past channel prior because upstream PatchTST has no missing-value mask",
+    "the data has no exact game date or game identifier"
+  ]
+}

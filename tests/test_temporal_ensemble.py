@@ -43,6 +43,11 @@ class TemporalWindowDefinitionTest(unittest.TestCase):
         weights = TemporalWindowEnsemble._validated_component_weights([1, 2, 3, 4])
         np.testing.assert_allclose(weights, [0.1, 0.2, 0.3, 0.4])
 
+    def test_histgb_iteration_setting_reaches_component_base_model(self):
+        ensemble = TemporalWindowEnsemble(hist_max_iter=175)
+        component = ensemble._make_base_model(0)
+        self.assertEqual(component.hist_max_iter, 175)
+
 
 class TemporalBlendSearchTest(unittest.TestCase):
     def test_fixed_weights_are_normalized_and_exclude_time_weighted(self):

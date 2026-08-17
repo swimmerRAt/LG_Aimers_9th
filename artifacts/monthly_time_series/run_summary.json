@@ -1,0 +1,84 @@
+{
+  "status": "rejected_keep_official_852_model",
+  "official_leaderboard_baseline_score": 852.1984993386,
+  "model_type": "monthly harmonic ridge dynamic regression on aggregate target logits",
+  "experiment_structure": "fit monthly time series using only seasons earlier than each validation season; add a tuned fraction of its forecast logit deviation to the official model logit",
+  "row_independence": "forecast depends only on fitted training history and the row's season/game_month; no other validation or test row is used at inference",
+  "selection_seasons": [
+    2022,
+    2023
+  ],
+  "outer_diagnostic_season": 2024,
+  "outer_is_reused_not_one_shot": true,
+  "fixed_final_logit_shift": -0.0461,
+  "official_development_objective": 1.0045631841711506,
+  "selected_configuration": {
+    "harmonic_order": 0,
+    "ridge": 10.0,
+    "recency_decay_per_year": 1.0
+  },
+  "selected_strength": 0.09550765313702321,
+  "selected_development_objective": 1.004547269026676,
+  "selection_passed": false,
+  "season_metrics": [
+    {
+      "validation_season": 2022,
+      "official_brier": 0.2435622461405432,
+      "candidate_brier": 0.24360329226737248,
+      "candidate_minus_official_brier": 4.10461268292861e-05,
+      "official_score": 2248.0657797286362,
+      "candidate_score": 2231.592215564271,
+      "target_mean": 0.5289204435249241,
+      "official_prediction_mean": 0.5182892285287838,
+      "candidate_prediction_mean": 0.5164382133244366,
+      "time_series_offset_mean": -0.07944751107457428
+    },
+    {
+      "validation_season": 2023,
+      "official_brier": 0.2537378949304638,
+      "candidate_brier": 0.2537165677111105,
+      "candidate_minus_official_brier": -2.1327219353273197e-05,
+      "official_score": 0.0,
+      "candidate_score": 0.0,
+      "target_mean": 0.49995723449750534,
+      "official_prediction_mean": 0.5098240143075439,
+      "candidate_prediction_mean": 0.507756080084164,
+      "time_series_offset_mean": -0.0883588117826368
+    },
+    {
+      "validation_season": 2024,
+      "official_brier": 0.2480239578589654,
+      "candidate_brier": 0.24807758851538586,
+      "candidate_minus_official_brier": 5.363065642047249e-05,
+      "official_score": 713.7387745690837,
+      "candidate_score": 692.2699317644665,
+      "target_mean": 0.4861049201797189,
+      "official_prediction_mean": 0.47934359733268095,
+      "candidate_prediction_mean": 0.4760911945734608,
+      "time_series_offset_mean": -0.13730377783795022
+    }
+  ],
+  "paired_comparisons": {
+    "2022": {
+      "paired_brier_delta": 4.104612682928037e-05,
+      "paired_standard_error": 3.701106873081088e-06,
+      "paired_ci95_low": 3.379195735804144e-05,
+      "paired_ci95_high": 4.83002963005193e-05
+    },
+    "2023": {
+      "paired_brier_delta": -2.132721935325775e-05,
+      "paired_standard_error": 4.208166787756906e-06,
+      "paired_ci95_low": -2.9575226257261286e-05,
+      "paired_ci95_high": -1.3079212449254215e-05
+    },
+    "2024": {
+      "paired_brier_delta": 5.3630656420520926e-05,
+      "paired_standard_error": 6.44327635228084e-06,
+      "paired_ci95_low": 4.100183477005048e-05,
+      "paired_ci95_high": 6.625947807099137e-05
+    }
+  },
+  "outer_improved": false,
+  "adopted": false,
+  "adoption_note": "The official model and ZIP remain unchanged. Even a diagnostic improvement would require fresh confirmation before fitting a deployable wrapper."
+}

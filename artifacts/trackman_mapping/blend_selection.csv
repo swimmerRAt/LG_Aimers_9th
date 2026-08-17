@@ -1,0 +1,2 @@
+optimizer,success,message,iterations,trackman_weight,current_weight,objective,baseline_objective,direct_trackman_objective
+bounded_scalar,True,Solution found.,40,0.0,1.0,1.001812487169955,1.001812487169955,1.0019598943997121

@@ -1,0 +1,4 @@
+validation_season,source,fit_and_prediction_seconds,training_rows,validation_rows
+2022,cache,0.0,728588,247472
+2023,cache,0.0,976060,245525
+2024,cache,0.0,1221585,253507

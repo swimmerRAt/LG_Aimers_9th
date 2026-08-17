@@ -1,0 +1,125 @@
+{
+  "status": "rejected_keep_official_852_model",
+  "official_leaderboard_baseline_score": 852.1984993386,
+  "design": "Optuna TPE continuously tunes official/CatBoost/spline-logistic weights; official weight is constrained to at least 50%",
+  "trials_per_variant": 1000,
+  "selection_seasons": [
+    2022,
+    2023
+  ],
+  "outer_diagnostic_season": 2024,
+  "outer_is_reused_not_one_shot": true,
+  "minimum_official_weight": 0.5,
+  "fixed_final_logit_shift": -0.0461,
+  "stability_penalty": 0.25,
+  "selected_variant_from_development": "without_mapping",
+  "selections": [
+    {
+      "variant": "without_mapping",
+      "trials": 1000,
+      "development_objective": 1.0032127135022033,
+      "official_only_objective": 1.0045631841711506,
+      "development_objective_delta": -0.0013504706689473345,
+      "official_weight": 0.5,
+      "catboost_weight": 0.5,
+      "residual_weight": 0.0
+    },
+    {
+      "variant": "with_mapping",
+      "trials": 1000,
+      "development_objective": 1.003285005096877,
+      "official_only_objective": 1.0045631841711506,
+      "development_objective_delta": -0.0012781790742737442,
+      "official_weight": 0.5,
+      "catboost_weight": 0.5,
+      "residual_weight": 0.0
+    }
+  ],
+  "development_fold_metrics": [
+    {
+      "validation_season": 2022,
+      "model": "official_852_baseline",
+      "brier": 0.2435622461405432,
+      "competition_score": 2248.0657797286362
+    },
+    {
+      "validation_season": 2022,
+      "model": "optuna_without_mapping",
+      "brier": 0.24350863967485073,
+      "competition_score": 2269.580344449507
+    },
+    {
+      "validation_season": 2023,
+      "model": "official_852_baseline",
+      "brier": 0.2537378949304638,
+      "competition_score": 0.0
+    },
+    {
+      "validation_season": 2023,
+      "model": "optuna_without_mapping",
+      "brier": 0.25329124862100916,
+      "competition_score": 0.0
+    },
+    {
+      "validation_season": 2022,
+      "model": "optuna_with_mapping",
+      "brier": 0.24349532102612553,
+      "competition_score": 2274.9256871482103
+    },
+    {
+      "validation_season": 2023,
+      "model": "optuna_with_mapping",
+      "brier": 0.2533213971886492,
+      "competition_score": 0.0
+    }
+  ],
+  "outer_diagnostic_metrics": [
+    {
+      "model": "official_852_baseline",
+      "brier": 0.2480239578589654,
+      "competition_score": 713.7387745690837,
+      "prediction_mean": 0.47934359733268095,
+      "mapped_brier": 0.24771462055235086,
+      "unmapped_brier": 0.24803948290316577
+    },
+    {
+      "model": "optuna_without_mapping",
+      "brier": 0.24850806933432995,
+      "competition_score": 519.944518481108,
+      "prediction_mean": 0.48168765450055734,
+      "mapped_brier": 0.24827857496434003,
+      "unmapped_brier": 0.2485195872151729
+    },
+    {
+      "model": "optuna_with_mapping",
+      "brier": 0.24850941024836082,
+      "competition_score": 519.4077383172124,
+      "prediction_mean": 0.4816516919964725,
+      "mapped_brier": 0.24828848283632085,
+      "unmapped_brier": 0.24852049817006852
+    }
+  ],
+  "paired_comparisons": {
+    "optuna_without_mapping_vs_baseline": {
+      "paired_brier_delta": 0.00048411147536461997,
+      "paired_standard_error": 3.667630078978609e-05,
+      "paired_ci95_low": 0.00041222592581663923,
+      "paired_ci95_high": 0.0005559970249126008
+    },
+    "optuna_with_mapping_vs_baseline": {
+      "paired_brier_delta": 0.00048545238939546887,
+      "paired_standard_error": 3.659319811488021e-05,
+      "paired_ci95_low": 0.0004137297210903037,
+      "paired_ci95_high": 0.0005571750577006341
+    },
+    "with_mapping_vs_without_mapping": {
+      "paired_brier_delta": 1.3409140308490533e-06,
+      "paired_standard_error": 1.4992793697285904e-06,
+      "paired_ci95_low": -1.5976735338189837e-06,
+      "paired_ci95_high": 4.27950159551709e-06
+    }
+  },
+  "diagnostic_improved": false,
+  "adopted": false,
+  "adoption_note": "2024 has already informed prior experiments, so it is a repeated diagnostic. Keep the official model unless a fresh leaderboard/future holdout confirms the candidate."
+}

@@ -1,0 +1,139 @@
+{
+  "status": "rejected_keep_official_852_model",
+  "official_leaderboard_baseline_score": 852.1984993386,
+  "fixed_final_logit_shift": -0.0461,
+  "comparison_design": "same CatBoost + spline-logistic OOF stack with and without leakage-safe Trackman mapping features, compared with the official 852 structure",
+  "selection_seasons": [
+    2022,
+    2023
+  ],
+  "outer_season": 2024,
+  "chosen_variant_from_development": "without_mapping",
+  "stack_selection": [
+    {
+      "variant": "without_mapping",
+      "optimizer": "multi_start_SLSQP",
+      "objective": 1.0000137440101777,
+      "success": true,
+      "message": "Optimization terminated successfully",
+      "iterations": 10,
+      "current_weight": 0.0,
+      "catboost_weight": 1.0,
+      "residual_weight": 6.5052130349130266e-18
+    },
+    {
+      "variant": "with_mapping",
+      "optimizer": "multi_start_SLSQP",
+      "objective": 1.0002328182470037,
+      "success": true,
+      "message": "Optimization terminated successfully",
+      "iterations": 10,
+      "current_weight": 0.0,
+      "catboost_weight": 1.0,
+      "residual_weight": 1.488166143703917e-17
+    }
+  ],
+  "outer_metrics": [
+    {
+      "model": "official_852_baseline",
+      "variant": "baseline",
+      "role": "baseline",
+      "brier": 0.2480239578589654,
+      "competition_score": 713.7387745690837,
+      "prediction_mean": 0.47934359733268095,
+      "mapped_row_rate": 0.047789607387567205,
+      "mapped_brier": 0.24771462055235086,
+      "unmapped_brier": 0.24803948290316577
+    },
+    {
+      "model": "without_mapping_catboost",
+      "variant": "without_mapping",
+      "role": "direct_branch",
+      "brier": 0.24968892797109885,
+      "competition_score": 47.235994302119444,
+      "prediction_mean": 0.4840638691899456,
+      "mapped_row_rate": 0.047789607387567205,
+      "mapped_brier": 0.24945099581498698,
+      "unmapped_brier": 0.2497008693281915
+    },
+    {
+      "model": "without_mapping_residual",
+      "variant": "without_mapping",
+      "role": "direct_branch",
+      "brier": 0.2509581729949917,
+      "competition_score": 0.0,
+      "prediction_mean": 0.47713502659944856,
+      "mapped_row_rate": 0.047789607387567205,
+      "mapped_brier": 0.2518542238378278,
+      "unmapped_brier": 0.2509132019273467
+    },
+    {
+      "model": "without_mapping_selected_stack",
+      "variant": "without_mapping",
+      "role": "selected_stack",
+      "brier": 0.24968892797109885,
+      "competition_score": 47.235994302119444,
+      "prediction_mean": 0.4840638691899456,
+      "mapped_row_rate": 0.047789607387567205,
+      "mapped_brier": 0.24945099581498698,
+      "unmapped_brier": 0.2497008693281915
+    },
+    {
+      "model": "with_mapping_catboost",
+      "variant": "with_mapping",
+      "role": "direct_branch",
+      "brier": 0.2496884455464791,
+      "competition_score": 47.42911329446153,
+      "prediction_mean": 0.4839917995616937,
+      "mapped_row_rate": 0.047789607387567205,
+      "mapped_brier": 0.24947654225590662,
+      "unmapped_brier": 0.24969908056489426
+    },
+    {
+      "model": "with_mapping_residual",
+      "variant": "with_mapping",
+      "role": "direct_branch",
+      "brier": 0.2509472310150315,
+      "competition_score": 0.0,
+      "prediction_mean": 0.47901470006603775,
+      "mapped_row_rate": 0.047789607387567205,
+      "mapped_brier": 0.2508015329655282,
+      "unmapped_brier": 0.2509545433197879
+    },
+    {
+      "model": "with_mapping_selected_stack",
+      "variant": "with_mapping",
+      "role": "selected_stack",
+      "brier": 0.2496884455464791,
+      "competition_score": 47.42911329446153,
+      "prediction_mean": 0.4839917995616937,
+      "mapped_row_rate": 0.047789607387567205,
+      "mapped_brier": 0.24947654225590662,
+      "unmapped_brier": 0.24969908056489426
+    }
+  ],
+  "paired_comparisons": {
+    "without_mapping_vs_baseline": {
+      "paired_brier_delta": 0.0016649701121335618,
+      "paired_standard_error": 7.346672485598455e-05,
+      "paired_ci95_low": 0.001520975331415832,
+      "paired_ci95_high": 0.0018089648928512915
+    },
+    "with_mapping_vs_baseline": {
+      "paired_brier_delta": 0.0016644876875136995,
+      "paired_standard_error": 7.330020709633469e-05,
+      "paired_ci95_low": 0.0015208192816048836,
+      "paired_ci95_high": 0.0018081560934225154
+    },
+    "with_mapping_vs_without_mapping": {
+      "paired_brier_delta": -4.824246198625016e-07,
+      "paired_standard_error": 3.0048050283664744e-06,
+      "paired_ci95_low": -6.371842475460792e-06,
+      "paired_ci95_high": 5.406993235735788e-06
+    }
+  },
+  "adopted": false,
+  "adoption_rule": "choose mapping variant only by 2022-2023 robust objective, then require its 2024 shifted Brier to improve with paired 95% CI entirely below zero",
+  "mapping_is_preserved": true,
+  "mapping_is_not_in_official_model_unless_stack_is_adopted": true
+}

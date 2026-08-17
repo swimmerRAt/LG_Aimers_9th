@@ -1,0 +1,29 @@
+{
+  "status": "rejected_keep_current_refined",
+  "selection_train_seasons": [
+    2022
+  ],
+  "selection_validation_season": 2023,
+  "outer_train_seasons": [
+    2022,
+    2023
+  ],
+  "outer_validation_season": 2024,
+  "selected_spec": "global_logit",
+  "selected_C": 3e-06,
+  "season_decay": 0.6,
+  "selection_brier": 0.2506959838699426,
+  "outer_current_brier": 0.2479999872715437,
+  "outer_candidate_brier": 0.24993633161942042,
+  "outer_current_score": 723.3344201874381,
+  "outer_candidate_score": 0.0,
+  "outer_current_new_pitcher_brier": 0.247779020370618,
+  "outer_candidate_new_pitcher_brier": 0.24987316936181797,
+  "paired_comparison_candidate_vs_current": {
+    "paired_brier_delta": 0.0019363443478766617,
+    "paired_standard_error": 7.559444984774758e-05,
+    "paired_ci95_low": 0.0017881792261750765,
+    "paired_ci95_high": 0.002084509469578247
+  },
+  "decision_reason": "candidate must improve paired overall Brier and must not worsen the 2024 new-pitcher cohort"
+}

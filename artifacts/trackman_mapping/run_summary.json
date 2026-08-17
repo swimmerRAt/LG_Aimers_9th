@@ -1,0 +1,151 @@
+{
+  "status": "rejected_keep_official_852_model",
+  "official_leaderboard_baseline_score": 852.1984993386,
+  "fixed_final_logit_shift": -0.0461,
+  "architecture": "official temporal refined model + leakage-safe Trackman augmented temporal branch -> development-selected probability blend -> fixed logit shift",
+  "mapping_rule": {
+    "max_rate_cost": 0.025,
+    "max_count_cost": 0.5,
+    "max_season_cost": 0.4,
+    "min_margin": 0.01,
+    "min_history": 50.0,
+    "one_to_one_assignment": "Hungarian within pitcher hand",
+    "validation_rule": "mapping and features use only seasons before each row season"
+  },
+  "mapping_stability": {
+    "stable_mappings": 21,
+    "compared_mappings": 21,
+    "stability_rate": 1.0,
+    "adjacent_cutoff_rows": [
+      {
+        "earlier_cutoff": 2022,
+        "later_cutoff": 2023,
+        "common_mappings": 9,
+        "stable_mappings": 9,
+        "stability_rate": 1.0
+      },
+      {
+        "earlier_cutoff": 2023,
+        "later_cutoff": 2024,
+        "common_mappings": 12,
+        "stable_mappings": 12,
+        "stability_rate": 1.0
+      }
+    ]
+  },
+  "mapping_summary": [
+    {
+      "cutoff_season": 2019,
+      "candidate_assignments": 0,
+      "accepted_mappings": 0,
+      "accepted_main_history_rows": 0.0,
+      "mapped_validation_rows": 0,
+      "validation_rows": 237413,
+      "mapped_validation_row_rate": 0.0
+    },
+    {
+      "cutoff_season": 2020,
+      "candidate_assignments": 198,
+      "accepted_mappings": 27,
+      "accepted_main_history_rows": 20526.0,
+      "mapped_validation_rows": 17318,
+      "validation_rows": 244087,
+      "mapped_validation_row_rate": 0.07095011205021161
+    },
+    {
+      "cutoff_season": 2021,
+      "candidate_assignments": 251,
+      "accepted_mappings": 26,
+      "accepted_main_history_rows": 32818.0,
+      "mapped_validation_rows": 10302,
+      "validation_rows": 247088,
+      "mapped_validation_row_rate": 0.04169364760733018
+    },
+    {
+      "cutoff_season": 2022,
+      "candidate_assignments": 301,
+      "accepted_mappings": 27,
+      "accepted_main_history_rows": 39425.0,
+      "mapped_validation_rows": 15817,
+      "validation_rows": 247472,
+      "mapped_validation_row_rate": 0.06391430141591777
+    },
+    {
+      "cutoff_season": 2023,
+      "candidate_assignments": 352,
+      "accepted_mappings": 25,
+      "accepted_main_history_rows": 42344.0,
+      "mapped_validation_rows": 8020,
+      "validation_rows": 245525,
+      "mapped_validation_row_rate": 0.03266469809591691
+    },
+    {
+      "cutoff_season": 2024,
+      "candidate_assignments": 395,
+      "accepted_mappings": 26,
+      "accepted_main_history_rows": 47054.0,
+      "mapped_validation_rows": 12115,
+      "validation_rows": 253507,
+      "mapped_validation_row_rate": 0.047789607387567205
+    }
+  ],
+  "trackman_feature_columns": [
+    "tm_is_mapped",
+    "tm_match_quality",
+    "tm_log1p_history_n",
+    "tm_rel_speed_delta",
+    "tm_spin_rate_delta",
+    "tm_induced_vert_break_delta",
+    "tm_horz_break_delta",
+    "tm_extension_delta",
+    "tm_rel_height_delta",
+    "tm_rel_side_delta",
+    "tm_zone_speed_delta",
+    "tm_rel_speed_std_delta",
+    "tm_spin_rate_std_delta",
+    "tm_induced_vert_break_std_delta",
+    "tm_horz_break_std_delta",
+    "tm_extension_std_delta",
+    "tm_rel_height_std_delta",
+    "tm_rel_side_std_delta",
+    "tm_zone_speed_std_delta",
+    "tm_fastball_rate_delta",
+    "tm_breaking_rate_delta",
+    "tm_offspeed_rate_delta"
+  ],
+  "trackman_shrinkage": 200.0,
+  "selected_trackman_weight": 0.0,
+  "selected_current_weight": 1.0,
+  "outer_baseline": {
+    "brier": 0.2480239578589654,
+    "competition_score": 713.7387745690837,
+    "prediction_mean": 0.47934359733268095,
+    "mapped_row_rate": 0.047789607387567205,
+    "mapped_pitcher_brier": 0.24771462055235086,
+    "unmapped_pitcher_brier": 0.24803948290316577
+  },
+  "outer_direct_trackman": {
+    "brier": 0.2480650423754158,
+    "competition_score": 697.2922664662873,
+    "prediction_mean": 0.4794156471821328,
+    "mapped_row_rate": 0.047789607387567205,
+    "mapped_pitcher_brier": 0.24792953529363138,
+    "unmapped_pitcher_brier": 0.24807184321511153
+  },
+  "outer_candidate": {
+    "brier": 0.2480239578589654,
+    "competition_score": 713.7387745690837,
+    "prediction_mean": 0.47934359733268095,
+    "mapped_row_rate": 0.047789607387567205,
+    "mapped_pitcher_brier": 0.24771462055235086,
+    "unmapped_pitcher_brier": 0.24803948290316577
+  },
+  "paired_comparison_candidate_vs_baseline": {
+    "paired_brier_delta": 0.0,
+    "paired_standard_error": 0.0,
+    "paired_ci95_low": 0.0,
+    "paired_ci95_high": 0.0
+  },
+  "adoption_rule": "positive development-selected Trackman weight; shifted 2024 overall Brier improves with paired CI below zero; mapped cohort not worse; historical mapping stability at least 97%",
+  "rule_note": "Do not create or submit a final ZIP until anonymous-ID probabilistic mapping is confirmed as allowed by the competition operator."
+}

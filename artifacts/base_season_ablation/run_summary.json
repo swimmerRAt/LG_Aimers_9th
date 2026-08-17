@@ -1,0 +1,154 @@
+{
+  "status": "rejected_keep_official_852_model",
+  "official_leaderboard_baseline_score": 852.1984993386,
+  "experiment_scope": "remove season from every temporal HistGB45/ExtraTrees55 component; keep all remaining features, component weights, rolling corrections and logit shift fixed",
+  "selection_seasons": [
+    2022,
+    2023
+  ],
+  "outer_diagnostic_season": 2024,
+  "outer_is_reused_not_one_shot": true,
+  "removed_feature": "season",
+  "official_feature_count": 33,
+  "candidate_feature_count": 32,
+  "component_weights": {
+    "full": 0.6673418251272106,
+    "recent_3": 0.12835508472002655,
+    "recent_2": 0.2043030901527629
+  },
+  "hist_weight": 0.45,
+  "hist_max_iter": 300,
+  "extra_trees_weight": 0.55,
+  "extra_trees_estimators": 160,
+  "fixed_final_logit_shift": -0.0461,
+  "official_development_objective": 1.0045631841711506,
+  "candidate_development_objective": 1.000563460888509,
+  "development_non_degraded": false,
+  "development_selected": false,
+  "season_metrics": [
+    {
+      "validation_season": 2022,
+      "official_brier": 0.2435622461405432,
+      "candidate_brier": 0.24374993286158822,
+      "candidate_minus_official_brier": 0.0001876867210450217,
+      "official_score": 2248.0657797286362,
+      "candidate_score": 2172.7390807006364,
+      "official_prediction_mean": 0.5182892285287838,
+      "candidate_prediction_mean": 0.5161777076635817,
+      "target_mean": 0.5289204435249241
+    },
+    {
+      "validation_season": 2023,
+      "official_brier": 0.2537378949304638,
+      "candidate_brier": 0.2522815202990507,
+      "candidate_minus_official_brier": -0.001456374631413071,
+      "official_score": 0.0,
+      "candidate_score": 0.0,
+      "official_prediction_mean": 0.5098240143075439,
+      "candidate_prediction_mean": 0.5081497621887431,
+      "target_mean": 0.49995723449750534
+    },
+    {
+      "validation_season": 2024,
+      "official_brier": 0.2480239578589654,
+      "candidate_brier": 0.24892788349223197,
+      "candidate_minus_official_brier": 0.0009039256332665779,
+      "official_score": 713.7387745690837,
+      "candidate_score": 351.8890672762898,
+      "official_prediction_mean": 0.47934359733268095,
+      "candidate_prediction_mean": 0.49116231443591507,
+      "target_mean": 0.4861049201797189
+    }
+  ],
+  "game_type_metrics": [
+    {
+      "validation_season": 2022,
+      "game_type": "F",
+      "rows": 30448,
+      "target_mean": 0.7087493431424067,
+      "official_prediction_mean": 0.6993513341405705,
+      "candidate_prediction_mean": 0.6652446249090248,
+      "official_brier": 0.20661015622035414,
+      "candidate_brier": 0.20856025614097057,
+      "candidate_minus_official_brier": 0.0019500999206164271
+    },
+    {
+      "validation_season": 2022,
+      "game_type": "R",
+      "rows": 217024,
+      "target_mean": 0.5036908360365674,
+      "official_prediction_mean": 0.4928866048942195,
+      "candidate_prediction_mean": 0.4952639400789401,
+      "official_brier": 0.24874654480746444,
+      "candidate_brier": 0.24868696875065743,
+      "candidate_minus_official_brier": -5.957605680700917e-05
+    },
+    {
+      "validation_season": 2023,
+      "game_type": "F",
+      "rows": 25686,
+      "target_mean": 0.47290352721326795,
+      "official_prediction_mean": 0.6894876924497796,
+      "candidate_prediction_mean": 0.6568007273443954,
+      "official_brier": 0.29596027454247287,
+      "candidate_brier": 0.28249085584345024,
+      "candidate_minus_official_brier": -0.013469418699022628
+    },
+    {
+      "validation_season": 2023,
+      "game_type": "R",
+      "rows": 219839,
+      "target_mean": 0.5031181910398064,
+      "official_prediction_mean": 0.4888321009675019,
+      "candidate_prediction_mean": 0.4907813758196816,
+      "official_brier": 0.24880462993783703,
+      "candidate_brier": 0.24875185998949023,
+      "candidate_minus_official_brier": -5.2769948346798046e-05
+    },
+    {
+      "validation_season": 2024,
+      "game_type": "F",
+      "rows": 30010,
+      "target_mean": 0.45928023992002664,
+      "official_prediction_mean": 0.4482325543101622,
+      "candidate_prediction_mean": 0.5374002186058013,
+      "official_brier": 0.24725160012119313,
+      "candidate_brier": 0.25472205368289685,
+      "candidate_minus_official_brier": 0.007470453561703727
+    },
+    {
+      "validation_season": 2024,
+      "game_type": "R",
+      "rows": 223497,
+      "target_mean": 0.4897067969592433,
+      "official_prediction_mean": 0.48352102432770017,
+      "candidate_prediction_mean": 0.48495373219929305,
+      "official_brier": 0.24812766598798064,
+      "candidate_brier": 0.24814987283695772,
+      "candidate_minus_official_brier": 2.2206848977079918e-05
+    }
+  ],
+  "paired_comparisons": {
+    "2022": {
+      "paired_brier_delta": 0.0001876867210449384,
+      "paired_standard_error": 3.112252734919501e-05,
+      "paired_ci95_low": 0.00012668656744051616,
+      "paired_ci95_high": 0.0002486868746493606
+    },
+    "2023": {
+      "paired_brier_delta": -0.0014563746314131217,
+      "paired_standard_error": 2.9245731460977083e-05,
+      "paired_ci95_low": -0.0015136962650766368,
+      "paired_ci95_high": -0.0013990529977496067
+    },
+    "2024": {
+      "paired_brier_delta": 0.0009039256332666802,
+      "paired_standard_error": 6.696005898206863e-05,
+      "paired_ci95_low": 0.0007726839176618257,
+      "paired_ci95_high": 0.0010351673488715348
+    }
+  },
+  "outer_improved": false,
+  "adopted": false,
+  "adoption_note": "The official 852 model remains unchanged. The 2024 fold is reused, so an improvement would still need fresh confirmation; a worse result is rejected."
+}

@@ -1,0 +1,10 @@
+validation_season,component,fit_seconds,source
+2022,full,62.638695417001145,fitted
+2022,recent_3,0.0,same_window_as_full
+2022,recent_2,42.53257762499561,fitted
+2023,full,107.92169695800112,fitted
+2023,recent_3,88.16601141700085,fitted
+2023,recent_2,55.951253833998635,fitted
+2024,full,161.58502712500194,fitted
+2024,recent_3,101.00129120799829,fitted
+2024,recent_2,64.77748012500524,fitted

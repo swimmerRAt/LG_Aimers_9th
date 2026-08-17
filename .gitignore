@@ -10,6 +10,7 @@ submit.zip
 artifacts/oof_*.csv
 /artifacts/forward_cv_2022_2024/oof_predictions.csv
 /artifacts/**/oof_predictions.csv
+/artifacts/**/outer_predictions.csv
 /artifacts/**/optuna.db
 /artifacts/**/optuna.db-*
 /artifacts/**/validation_models.pkl

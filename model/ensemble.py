@@ -12,6 +12,8 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OrdinalEncoder
 from sklearn.utils.validation import check_is_fitted
 
+from model.calendar_features import add_climate_season_indicators
+
 
 CATEGORICAL_COLUMNS = ("top_bottom", "game_type", "base_state")
 SMOOTHING_RATE_SPECS = (
@@ -73,6 +75,7 @@ class OptimizedBaseballEnsemble(BaseEstimator, ClassifierMixin):
     def __init__(
         self,
         hist_weight: float = 0.45,
+        hist_max_iter: int = 300,
         n_estimators: int = 160,
         random_state: int = 42,
         calibration_slope: float = 1.0,
@@ -80,6 +83,7 @@ class OptimizedBaseballEnsemble(BaseEstimator, ClassifierMixin):
         smoothing_lambdas=(),
     ):
         self.hist_weight = hist_weight
+        self.hist_max_iter = hist_max_iter
         self.n_estimators = n_estimators
         self.random_state = random_state
         self.calibration_slope = calibration_slope
@@ -95,6 +99,9 @@ class OptimizedBaseballEnsemble(BaseEstimator, ClassifierMixin):
             model_features = self.smoothing_builder_.transform(X)
         else:
             model_features = X
+        self.uses_climate_season_ = "game_month" in model_features.columns
+        if self.uses_climate_season_:
+            model_features = add_climate_season_indicators(model_features)
         feature_columns = list(model_features.columns)
         categorical = [column for column in CATEGORICAL_COLUMNS if column in feature_columns]
         numeric = [column for column in feature_columns if column not in categorical]
@@ -118,7 +125,7 @@ class OptimizedBaseballEnsemble(BaseEstimator, ClassifierMixin):
         transformed = self.preprocessor_.fit_transform(model_features, y)
         self.hist_model_ = HistGradientBoostingClassifier(
             learning_rate=0.04,
-            max_iter=300,
+            max_iter=self.hist_max_iter,
             max_leaf_nodes=31,
             min_samples_leaf=200,
             l2_regularization=5.0,
@@ -150,6 +157,9 @@ class OptimizedBaseballEnsemble(BaseEstimator, ClassifierMixin):
         model_features = self.smoothing_builder_.transform(X) if hasattr(
             self, "smoothing_builder_"
         ) else X
+        # getattr keeps older serialized models backward-compatible.
+        if getattr(self, "uses_climate_season_", False):
+            model_features = add_climate_season_indicators(model_features)
         transformed = self.preprocessor_.transform(model_features)
         hist = self._positive_probability(self.hist_model_, transformed)
         extra = self._positive_probability(self.extra_model_, transformed)

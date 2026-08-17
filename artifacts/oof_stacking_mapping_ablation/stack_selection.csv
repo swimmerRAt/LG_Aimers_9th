@@ -1,0 +1,3 @@
+variant,optimizer,objective,success,message,iterations,current_weight,catboost_weight,residual_weight
+without_mapping,multi_start_SLSQP,1.0000137440101777,True,Optimization terminated successfully,10,0.0,1.0,6.5052130349130266e-18
+with_mapping,multi_start_SLSQP,1.0002328182470037,True,Optimization terminated successfully,10,0.0,1.0,1.488166143703917e-17

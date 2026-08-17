@@ -1,0 +1,227 @@
+{
+  "status": "rejected_keep_official_852_model",
+  "official_leaderboard_baseline_score": 852.1984993386,
+  "experiment_scope": "add four one-hot climate-season indicators derived only from game_month to every temporal HistGB45/ExtraTrees55 component; keep component weights, rolling corrections and logit shift fixed",
+  "temperature_interpretation": "calendar season is a proxy for temperature and game environment; no actual temperature measurement is present in train.csv",
+  "month_mapping": {
+    "spring": [
+      3,
+      4,
+      5
+    ],
+    "summer": [
+      6,
+      7,
+      8
+    ],
+    "autumn": [
+      9,
+      10,
+      11
+    ],
+    "winter": [
+      12,
+      1,
+      2
+    ]
+  },
+  "observed_training_months": [
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10
+  ],
+  "game_month_missing_rows": 0,
+  "derived_feature_columns": [
+    "game_season_spring",
+    "game_season_summer",
+    "game_season_autumn",
+    "game_season_winter"
+  ],
+  "raw_model_input_feature_count": 34,
+  "derived_model_feature_count": 37,
+  "selection_seasons": [
+    2022,
+    2023
+  ],
+  "outer_diagnostic_season": 2024,
+  "outer_is_reused_not_one_shot": true,
+  "component_weights": {
+    "full": 0.6673418251272106,
+    "recent_3": 0.12835508472002655,
+    "recent_2": 0.2043030901527629
+  },
+  "hist_weight": 0.45,
+  "hist_max_iter": 300,
+  "extra_trees_weight": 0.55,
+  "extra_trees_estimators": 160,
+  "fixed_final_logit_shift": -0.0461,
+  "official_development_objective": 1.0045631841711506,
+  "candidate_development_objective": 1.0047358198130365,
+  "development_non_degraded": false,
+  "development_selected": false,
+  "season_metrics": [
+    {
+      "validation_season": 2022,
+      "official_brier": 0.2435622461405432,
+      "candidate_brier": 0.24359547583334903,
+      "candidate_minus_official_brier": 3.322969280583621e-05,
+      "official_score": 2248.0657797286362,
+      "candidate_score": 2234.7292844516087,
+      "official_prediction_mean": 0.5182892285287838,
+      "candidate_prediction_mean": 0.5195439927337121,
+      "target_mean": 0.5289204435249241
+    },
+    {
+      "validation_season": 2023,
+      "official_brier": 0.2537378949304638,
+      "candidate_brier": 0.25378482512190753,
+      "candidate_minus_official_brier": 4.6930191443750324e-05,
+      "official_score": 0.0,
+      "candidate_score": 0.0,
+      "official_prediction_mean": 0.5098240143075439,
+      "candidate_prediction_mean": 0.5098235862014112,
+      "target_mean": 0.49995723449750534
+    },
+    {
+      "validation_season": 2024,
+      "official_brier": 0.2480239578589654,
+      "candidate_brier": 0.24807004560895804,
+      "candidate_minus_official_brier": 4.608774999265153e-05,
+      "official_score": 713.7387745690837,
+      "candidate_score": 695.2894262699738,
+      "official_prediction_mean": 0.47934359733268095,
+      "candidate_prediction_mean": 0.47916955220179197,
+      "target_mean": 0.4861049201797189
+    }
+  ],
+  "climate_season_metrics": [
+    {
+      "validation_season": 2022,
+      "climate_season": "autumn",
+      "rows": 50879,
+      "target_mean": 0.5141020853397276,
+      "official_prediction_mean": 0.5166506426780242,
+      "candidate_prediction_mean": 0.5177449133310266,
+      "official_brier": 0.2437908004562044,
+      "candidate_brier": 0.24391991458185397,
+      "candidate_minus_official_brier": 0.00012911412564955982
+    },
+    {
+      "validation_season": 2022,
+      "climate_season": "spring",
+      "rows": 86260,
+      "target_mean": 0.5423950846278692,
+      "official_prediction_mean": 0.5211828904659758,
+      "candidate_prediction_mean": 0.5227837765102273,
+      "official_brier": 0.24176049273877837,
+      "candidate_brier": 0.2418328123187478,
+      "candidate_minus_official_brier": 7.231957996942096e-05
+    },
+    {
+      "validation_season": 2022,
+      "climate_season": "summer",
+      "rows": 110333,
+      "target_mean": 0.5252191094232913,
+      "official_prediction_mean": 0.5167825381532717,
+      "candidate_prediction_mean": 0.5178407091500793,
+      "official_brier": 0.2448654884471035,
+      "candidate_brier": 0.244823940895337,
+      "candidate_minus_official_brier": -4.154755176652425e-05
+    },
+    {
+      "validation_season": 2023,
+      "climate_season": "autumn",
+      "rows": 54779,
+      "target_mean": 0.5045181547673379,
+      "official_prediction_mean": 0.5020786235709985,
+      "candidate_prediction_mean": 0.49435344466802283,
+      "official_brier": 0.25274085017606335,
+      "candidate_brier": 0.25251691414246685,
+      "candidate_minus_official_brier": -0.0002239360335964946
+    },
+    {
+      "validation_season": 2023,
+      "climate_season": "spring",
+      "rows": 80864,
+      "target_mean": 0.49160318559556787,
+      "official_prediction_mean": 0.5138823413720696,
+      "candidate_prediction_mean": 0.5216161195682109,
+      "official_brier": 0.25384709745223144,
+      "candidate_brier": 0.25505291022067844,
+      "candidate_minus_official_brier": 0.001205812768447001
+    },
+    {
+      "validation_season": 2023,
+      "climate_season": "summer",
+      "rows": 109882,
+      "target_mean": 0.5038313827560474,
+      "official_prediction_mean": 0.5106986998739824,
+      "candidate_prediction_mean": 0.5088575268366797,
+      "official_brier": 0.25415458339519037,
+      "candidate_brier": 0.2534837063045924,
+      "candidate_minus_official_brier": -0.0006708770905979877
+    },
+    {
+      "validation_season": 2024,
+      "climate_season": "autumn",
+      "rows": 34976,
+      "target_mean": 0.47706999085086915,
+      "official_prediction_mean": 0.47575221564291315,
+      "candidate_prediction_mean": 0.47471760395956225,
+      "official_brier": 0.24848993539832098,
+      "candidate_brier": 0.2485235149945643,
+      "candidate_minus_official_brier": 3.357959624331053e-05
+    },
+    {
+      "validation_season": 2024,
+      "climate_season": "spring",
+      "rows": 99027,
+      "target_mean": 0.4915528088299151,
+      "official_prediction_mean": 0.4813708571692105,
+      "candidate_prediction_mean": 0.48083279258809425,
+      "official_brier": 0.24805794882240814,
+      "candidate_brier": 0.24814484233306497,
+      "candidate_minus_official_brier": 8.689351065682693e-05
+    },
+    {
+      "validation_season": 2024,
+      "climate_season": "summer",
+      "rows": 119504,
+      "target_mean": 0.48423483732762085,
+      "official_prediction_mean": 0.4787148209415084,
+      "candidate_prediction_mean": 0.4790942880766239,
+      "official_brier": 0.24785941061742245,
+      "candidate_brier": 0.24787534551164653,
+      "candidate_minus_official_brier": 1.59348942240789e-05
+    }
+  ],
+  "paired_comparisons": {
+    "2022": {
+      "paired_brier_delta": 3.322969280578761e-05,
+      "paired_standard_error": 1.6819889578768676e-05,
+      "paired_ci95_low": 2.6270923140100336e-07,
+      "paired_ci95_high": 6.619667638017421e-05
+    },
+    "2023": {
+      "paired_brier_delta": 4.69301914437741e-05,
+      "paired_standard_error": 2.0323353741060978e-05,
+      "paired_ci95_low": 7.096418111294584e-06,
+      "paired_ci95_high": 8.676396477625362e-05
+    },
+    "2024": {
+      "paired_brier_delta": 4.6087749992635746e-05,
+      "paired_standard_error": 1.0559058432264168e-05,
+      "paired_ci95_low": 2.5391995465397977e-05,
+      "paired_ci95_high": 6.678350451987351e-05
+    }
+  },
+  "outer_improved": false,
+  "adopted": false,
+  "adoption_note": "The official 852 model and submission ZIP remain unchanged. A candidate must pass development selection and improve the reused 2024 diagnostic before fresh confirmation and final-model fitting are considered.",
+  "visual_omission_reason": "Exact season and climate-season comparisons fit in compact tables; a chart would not materially improve interpretation for three validation seasons."
+}

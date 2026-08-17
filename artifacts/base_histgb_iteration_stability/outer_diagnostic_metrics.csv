@@ -1,0 +1,3 @@
+model,hist_max_iter,brier,competition_score,prediction_mean
+official_852_baseline,300,0.2480239578589654,713.7387745690837,0.47934359733268095
+selected_base_histgb_candidate,50,0.24814382783821406,665.7537243525246,0.4799774208470004

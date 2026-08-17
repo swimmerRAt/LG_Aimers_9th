@@ -114,6 +114,7 @@ def cache_file(
     validation_season: int,
     component: str,
     time_decay: float,
+    hist_max_iter: int,
     n_estimators: int,
     smoothing_lambdas: tuple[float, ...] = (),
 ) -> Path:
@@ -121,7 +122,7 @@ def cache_file(
     version = "v3" if smoothing_lambdas else "v2"
     signature = hashlib.sha256(
         f"{version}|{validation_season}|{component}|{time_decay:.6f}|"
-        f"{n_estimators}|{smoothing_signature}".encode()
+        f"{hist_max_iter}|{n_estimators}|{smoothing_signature}".encode()
     ).hexdigest()[:10]
     return cache_dir / f"{validation_season}_{component}_{signature}.npz"
 
@@ -151,6 +152,7 @@ def fit_component_prediction(
     component: str,
     time_decay: float,
     hist_weight: float,
+    hist_max_iter: int,
     n_estimators: int,
     random_state: int,
     cache_dir: Path,
@@ -168,6 +170,7 @@ def fit_component_prediction(
         validation_season,
         component,
         time_decay,
+        hist_max_iter,
         n_estimators,
         smoothing_lambdas,
     )
@@ -176,7 +179,12 @@ def fit_component_prediction(
         if np.array_equal(cached["validation_indices"], validation_indices):
             return cached["prediction"].astype(float), 0.0, "cache"
 
-    if validation_season == 2024 and component == "full" and not smoothing_lambdas:
+    if (
+        validation_season == 2024
+        and component == "full"
+        and hist_max_iter == 300
+        and not smoothing_lambdas
+    ):
         existing = load_existing_2024_full_prediction(
             baseline_oof_2024, validation_ids, truth
         )
@@ -204,6 +212,7 @@ def fit_component_prediction(
         )
     model = OptimizedBaseballEnsemble(
         hist_weight=hist_weight,
+        hist_max_iter=hist_max_iter,
         n_estimators=n_estimators,
         random_state=random_state,
         smoothing_lambdas=smoothing_lambdas,
@@ -238,6 +247,7 @@ def main() -> None:
     parser.add_argument("--fixed-development-weights", type=float, nargs=3)
     parser.add_argument("--fixed-final-weights", type=float, nargs=3)
     parser.add_argument("--hist-weight", type=float, default=0.45)
+    parser.add_argument("--hist-max-iter", type=int, default=300)
     parser.add_argument("--n-estimators", type=int, default=160)
     parser.add_argument("--random-state", type=int, default=42)
     parser.add_argument("--smoothing-lambdas", type=float, nargs="*", default=[])
@@ -315,6 +325,7 @@ def main() -> None:
                     component,
                     selected_decay,
                     args.hist_weight,
+                    args.hist_max_iter,
                     args.n_estimators,
                     args.random_state,
                     cache_dir,
@@ -436,6 +447,7 @@ def main() -> None:
         "minimum_outer_brier_improvement": args.min_outer_brier_improvement,
         "feature_columns": feature_columns,
         "hist_weight_within_each_component": args.hist_weight,
+        "hist_max_iter_per_component": args.hist_max_iter,
         "extra_trees_weight_within_each_component": 1.0 - args.hist_weight,
         "n_estimators_per_component": args.n_estimators,
         "smoothing_lambdas": list(args.smoothing_lambdas),
@@ -449,6 +461,7 @@ def main() -> None:
             component_weights=final_weights,
             time_decay=selected_decay,
             hist_weight=args.hist_weight,
+            hist_max_iter=args.hist_max_iter,
             n_estimators=args.n_estimators,
             random_state=args.random_state,
             smoothing_lambdas=tuple(args.smoothing_lambdas),

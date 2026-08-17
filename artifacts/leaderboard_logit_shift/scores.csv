@@ -1,0 +1,5 @@
+logit_shift,submission_file,official_score,status
+0.00,submit_temporal_refined.zip,799.5807811031,submitted
+-0.02,submit_temporal_refined02.zip,835.3365464969,submitted
+-0.04,submit_temporal_refined04.zip,851.2713651591,submitted
+-0.0461,submit_temporal_refined046.zip,852.1984993386,submitted

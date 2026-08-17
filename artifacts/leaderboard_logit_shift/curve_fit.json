@@ -1,0 +1,25 @@
+{
+  "quadratic": -24764.27565731719,
+  "linear": -2282.935590692144,
+  "intercept": 799.5813908773966,
+  "optimal_logit_shift": -0.04609332455919414,
+  "estimated_optimal_score": 852.1954364421509,
+  "submitted_points": [
+    {
+      "logit_shift": 0.0,
+      "official_score": 799.5807811031
+    },
+    {
+      "logit_shift": -0.02,
+      "official_score": 835.3365464969
+    },
+    {
+      "logit_shift": -0.04,
+      "official_score": 851.2713651591
+    },
+    {
+      "logit_shift": -0.0461,
+      "official_score": 852.1984993386
+    }
+  ]
+}
