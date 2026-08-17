@@ -94,15 +94,34 @@ def select_continuous_blend_weights(
     return all_weights, pd.DataFrame([row])
 
 
+def fixed_blend_weights(values, label: str) -> tuple[tuple[float, ...], pd.DataFrame]:
+    weights = np.asarray(values, dtype=float)
+    if weights.shape != (len(ACTIVE_COMPONENT_NAMES),):
+        raise ValueError(
+            f"{label} must provide {len(ACTIVE_COMPONENT_NAMES)} active component weights"
+        )
+    if not np.isfinite(weights).all() or (weights < 0.0).any() or weights.sum() <= 0.0:
+        raise ValueError(f"{label} weights must be finite, non-negative, and have a positive sum")
+    weights /= weights.sum()
+    all_weights = tuple(weights.tolist()) + (0.0,)
+    row = {"strategy": "fixed_from_prior_temporal_ensemble"}
+    row.update({name: weight for name, weight in zip(COMPONENT_NAMES, all_weights)})
+    return all_weights, pd.DataFrame([row])
+
+
 def cache_file(
     cache_dir: Path,
     validation_season: int,
     component: str,
     time_decay: float,
     n_estimators: int,
+    smoothing_lambdas: tuple[float, ...] = (),
 ) -> Path:
+    smoothing_signature = ",".join(f"{value:g}" for value in smoothing_lambdas)
+    version = "v3" if smoothing_lambdas else "v2"
     signature = hashlib.sha256(
-        f"v2|{validation_season}|{component}|{time_decay:.6f}|{n_estimators}".encode()
+        f"{version}|{validation_season}|{component}|{time_decay:.6f}|"
+        f"{n_estimators}|{smoothing_signature}".encode()
     ).hexdigest()[:10]
     return cache_dir / f"{validation_season}_{component}_{signature}.npz"
 
@@ -136,6 +155,7 @@ def fit_component_prediction(
     random_state: int,
     cache_dir: Path,
     baseline_oof_2024: Path,
+    smoothing_lambdas: tuple[float, ...] = (),
 ) -> tuple[np.ndarray, float, str]:
     train_mask = train["season"] < validation_season
     validation_mask = train["season"] == validation_season
@@ -144,14 +164,19 @@ def fit_component_prediction(
     validation_ids = train.loc[validation_mask, ID_COL].to_numpy()
 
     destination = cache_file(
-        cache_dir, validation_season, component, time_decay, n_estimators
+        cache_dir,
+        validation_season,
+        component,
+        time_decay,
+        n_estimators,
+        smoothing_lambdas,
     )
     if destination.is_file():
         cached = np.load(destination)
         if np.array_equal(cached["validation_indices"], validation_indices):
             return cached["prediction"].astype(float), 0.0, "cache"
 
-    if validation_season == 2024 and component == "full":
+    if validation_season == 2024 and component == "full" and not smoothing_lambdas:
         existing = load_existing_2024_full_prediction(
             baseline_oof_2024, validation_ids, truth
         )
@@ -181,6 +206,7 @@ def fit_component_prediction(
         hist_weight=hist_weight,
         n_estimators=n_estimators,
         random_state=random_state,
+        smoothing_lambdas=smoothing_lambdas,
     )
     started = time.perf_counter()
     model.fit(
@@ -209,9 +235,12 @@ def main() -> None:
     parser.add_argument("--development-season-weights", type=float, nargs="+", default=[0.4, 0.6])
     parser.add_argument("--final-season-weights", type=float, nargs="+", default=[0.2, 0.3, 0.5])
     parser.add_argument("--stability-penalty", type=float, default=0.10)
+    parser.add_argument("--fixed-development-weights", type=float, nargs=3)
+    parser.add_argument("--fixed-final-weights", type=float, nargs=3)
     parser.add_argument("--hist-weight", type=float, default=0.45)
     parser.add_argument("--n-estimators", type=int, default=160)
     parser.add_argument("--random-state", type=int, default=42)
+    parser.add_argument("--smoothing-lambdas", type=float, nargs="*", default=[])
     parser.add_argument("--min-outer-brier-improvement", type=float, default=0.00002)
     parser.add_argument(
         "--baseline-summary",
@@ -290,6 +319,7 @@ def main() -> None:
                     args.random_state,
                     cache_dir,
                     args.baseline_oof_2024,
+                    tuple(args.smoothing_lambdas),
                 )
             predictions[component] = prediction
             fold[component] = prediction
@@ -307,6 +337,7 @@ def main() -> None:
             )
             print(
                 f"season={validation_season} component={component} "
+                f"brier={component_metric_rows[-1]['brier']:.8f} "
                 f"score={component_metric_rows[-1]['competition_score']:.5f} "
                 f"fit={fit_seconds:.1f}s source={source}",
                 flush=True,
@@ -314,18 +345,28 @@ def main() -> None:
         oof_parts.append(fold)
 
     oof = pd.concat(oof_parts, ignore_index=True)
-    development_weights, development_search = select_continuous_blend_weights(
-        oof,
-        development_seasons,
-        tuple(args.development_season_weights),
-        args.stability_penalty,
-    )
-    final_weights, final_search = select_continuous_blend_weights(
-        oof,
-        validation_seasons,
-        tuple(args.final_season_weights),
-        args.stability_penalty,
-    )
+    if args.fixed_development_weights is None:
+        development_weights, development_search = select_continuous_blend_weights(
+            oof,
+            development_seasons,
+            tuple(args.development_season_weights),
+            args.stability_penalty,
+        )
+    else:
+        development_weights, development_search = fixed_blend_weights(
+            args.fixed_development_weights, "fixed-development-weights"
+        )
+    if args.fixed_final_weights is None:
+        final_weights, final_search = select_continuous_blend_weights(
+            oof,
+            validation_seasons,
+            tuple(args.final_season_weights),
+            args.stability_penalty,
+        )
+    else:
+        final_weights, final_search = fixed_blend_weights(
+            args.fixed_final_weights, "fixed-final-weights"
+        )
     development_search.to_csv(
         args.artifact_dir / "development_weight_optimization.csv", index=False
     )
@@ -378,7 +419,11 @@ def main() -> None:
         "validation_seasons": list(validation_seasons),
         "development_seasons": list(development_seasons),
         "outer_season": args.outer_season,
-        "weight_optimizer": "continuous SLSQP with non-negative simplex constraints",
+        "weight_strategy": (
+            "fixed_from_prior_temporal_ensemble"
+            if args.fixed_development_weights is not None
+            else "continuous SLSQP with non-negative simplex constraints"
+        ),
         "time_weighted_component": "excluded",
         "development_component_weights": dict(zip(COMPONENT_NAMES, development_weights)),
         "final_component_weights": dict(zip(COMPONENT_NAMES, final_weights)),
@@ -393,6 +438,7 @@ def main() -> None:
         "hist_weight_within_each_component": args.hist_weight,
         "extra_trees_weight_within_each_component": 1.0 - args.hist_weight,
         "n_estimators_per_component": args.n_estimators,
+        "smoothing_lambdas": list(args.smoothing_lambdas),
         "python_version": platform.python_version(),
         "sklearn_version": sklearn.__version__,
         "model_output": None,
@@ -405,6 +451,7 @@ def main() -> None:
             hist_weight=args.hist_weight,
             n_estimators=args.n_estimators,
             random_state=args.random_state,
+            smoothing_lambdas=tuple(args.smoothing_lambdas),
         )
         started = time.perf_counter()
         final_model.fit(train[feature_columns], train[TARGET_COL].to_numpy())
@@ -422,6 +469,7 @@ def main() -> None:
             "random_state": args.random_state,
             "component_weights": dict(zip(COMPONENT_NAMES, final_weights)),
             "time_weighted_component": "excluded",
+            "smoothing_lambdas": list(args.smoothing_lambdas),
         }
         args.model_output.parent.mkdir(parents=True, exist_ok=True)
         joblib.dump(artifact, args.model_output, compress=3)

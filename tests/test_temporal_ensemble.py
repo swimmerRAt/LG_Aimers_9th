@@ -5,11 +5,27 @@ import unittest
 import numpy as np
 import pandas as pd
 
+from model.ensemble import RateSmoothingFeatureBuilder
 from model.temporal_ensemble import TemporalWindowEnsemble
-from train_temporal_ensemble import select_continuous_blend_weights
+from train_temporal_ensemble import fixed_blend_weights, select_continuous_blend_weights
 
 
 class TemporalWindowDefinitionTest(unittest.TestCase):
+    def test_rate_smoothing_shrinks_small_samples_more(self):
+        frame = pd.DataFrame(
+            {
+                "asof_pitcher_n": [10, 1000],
+                "asof_pitcher_success_rate": [0.7, 0.7],
+                "asof_batter_n": [0, 0],
+                "asof_batter_success_rate": [np.nan, np.nan],
+            }
+        )
+        builder = RateSmoothingFeatureBuilder((50,)).fit(frame, [0, 1])
+        result = builder.transform(frame)
+        self.assertAlmostEqual(result.loc[0, "pitcher_success_rate_smooth_50"], 0.5333333333)
+        self.assertAlmostEqual(result.loc[1, "pitcher_success_rate_smooth_50"], 0.6904761905)
+        self.assertEqual(result.loc[0, "batter_success_rate_smooth_50"], 0.5)
+
     def test_windows_follow_latest_training_season(self):
         seasons = np.array([2019, 2020, 2021, 2022, 2023, 2024])
         masks = TemporalWindowEnsemble.component_masks(seasons, latest_season=2024)
@@ -29,6 +45,11 @@ class TemporalWindowDefinitionTest(unittest.TestCase):
 
 
 class TemporalBlendSearchTest(unittest.TestCase):
+    def test_fixed_weights_are_normalized_and_exclude_time_weighted(self):
+        weights, diagnostics = fixed_blend_weights([2, 1, 1], "test")
+        np.testing.assert_allclose(weights, [0.5, 0.25, 0.25, 0.0])
+        self.assertEqual(diagnostics.loc[0, "strategy"], "fixed_from_prior_temporal_ensemble")
+
     def test_continuous_optimizer_excludes_time_weighted_component(self):
         oof = pd.DataFrame(
             {

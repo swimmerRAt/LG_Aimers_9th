@@ -482,6 +482,71 @@ OOF 결과는 보존하지만 상태는
 - `artifacts/temporal_ensemble/run_summary.json`
 - 대용량 OOF와 구성요소 캐시는 Git에서 제외
 
+### 시간창 앙상블 위의 확률 정제 실험
+
+확률 정제는 단일 HistGB+ExtraTrees 모델로 되돌아가 적용하지 않았다. 바로 앞 절의
+`TemporalWindowEnsemble`을 기준으로 전체 기간 66.7342%, 최근 3년 12.8355%, 최근 2년
+20.4303%의 2024 outer용 비중을 고정한 뒤 다음 순서로 적용했다.
+
+```text
+전체·최근 3년·최근 2년 HistGB+ExtraTrees
+        ↓ 기존 연속 최적 비중으로 결합
+시간창 앙상블 확률
+        ↓ 선택적으로 성공률 smoothing 피처 사용
+game_type별 축소 로짓 절편 보정
+        ↓
+전체 확률 수준의 Rolling 로짓 절편 보정
+```
+
+성공률 smoothing은 입력 피처이므로 각 시간창 구성요소를 학습하기 전에 생성한다.
+`asof_pitcher_n`, `asof_pitcher_success_rate`, `asof_batter_n`,
+`asof_batter_success_rate`와 해당 학습 fold의 평균 성공률을 이용해 선수별 `λ=50, 200,
+500, 1000` 피처를 추가한다. 검증 시즌의 정답이나 테스트 데이터 내부 통계는 사용하지
+않는다.
+
+후단 보정은 각 검증 시즌보다 이른 OOF만 사용한다. 오래된 시즌의 가중치는 시즌당 `0.6`
+배로 감쇠한다. `game_type` 보정은 유형별 로짓 절편을 전체 절편 쪽으로 `100,000` 표본만큼
+축소하고 10%만 적용한다. 전체 확률 보정도 로짓 절편의 25%만 적용해 시즌 드리프트에 대한
+과도한 보정을 제한한다.
+
+| 2024 forward 후보 | Brier | 대회 환산 점수 | 원본 시간창 대비 |
+| --- | ---: | ---: | ---: |
+| 원본 시간창 앙상블 | 0.24805506 | 701.28755 | 기준 |
+| smoothing 시간창 앙상블 | 0.24808941 | 687.53616 | -13.75138점 |
+| smoothing + game_type 보정 | 0.24808289 | 690.15169 | -11.13586점 |
+| smoothing + game_type + Rolling 전체 보정 | 0.24805249 | 702.31513 | +1.02759점 |
+| 원본 시간창 + game_type 보정 | 0.24804393 | 705.74630 | +4.45876점 |
+| 원본 시간창 + game_type + Rolling 전체 보정 | **0.24799999** | **723.33442** | **+22.04687점** |
+
+요청한 전체 순서인 `시간창 앙상블 → smoothing → game_type → Rolling 보정`은 원본보다
+약 1.03점 높았지만 paired Brier 95% 신뢰구간이
+`[-0.00004119, +0.00003606]`으로 0을 포함한다. smoothing 자체가 세 시간창 모두에서
+악화됐고 이 손실을 후단 보정이 겨우 만회한 결과이므로 채택하지 않는다.
+
+smoothing을 제외한 두 후단 보정은 약 22.05점 개선됐으며 paired Brier 95% 신뢰구간은
+`[-0.00007272, -0.00003743]`으로 개선 방향이다. 다만 2024는 이전 모델 개발에서도 이미
+여러 번 확인한 시즌이므로 완전히 새로운 one-shot outer 검증으로 볼 수 없다. 따라서 이
+결과는 유력한 진단 후보로 보존하되 `model/final_model.pkl`을 자동 교체하지 않는다. 새로운
+시즌 검증이나 실제 리더보드 제출로 확인한 뒤 승격한다.
+
+재현 명령과 결과 파일은 다음과 같다.
+
+```bash
+.venv/bin/python train_temporal_ensemble.py \
+  --artifact-dir artifacts/probability_refinement \
+  --smoothing-lambdas 50 200 500 1000 \
+  --fixed-development-weights 0.6673418251 0.1283550847 0.2043030902 \
+  --fixed-final-weights 0.7602988964 0.0407317827 0.1989693209 \
+  --skip-final-fit
+.venv/bin/python train_probability_refinement.py
+```
+
+- `artifacts/probability_refinement/blend_metrics.csv`
+- `artifacts/probability_refinement/run_summary.json`
+- `artifacts/probability_refinement/final_comparison/metrics.csv`
+- `artifacts/probability_refinement/final_comparison/run_summary.json`
+- 대용량 OOF와 학습 캐시는 Git에서 제외
+
 ## 8. 재현 및 제출 명령
 
 기존 단일-2024 Optuna 탐색과 사후 다년 검증은 아래 명령으로 재현할 수 있지만, 신규 모델

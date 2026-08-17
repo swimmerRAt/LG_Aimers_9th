@@ -25,12 +25,14 @@ class TemporalWindowEnsemble(BaseEstimator, ClassifierMixin):
         hist_weight: float = 0.45,
         n_estimators: int = 160,
         random_state: int = 42,
+        smoothing_lambdas=(),
     ):
         self.component_weights = component_weights
         self.time_decay = time_decay
         self.hist_weight = hist_weight
         self.n_estimators = n_estimators
         self.random_state = random_state
+        self.smoothing_lambdas = smoothing_lambdas
 
     @staticmethod
     def _validated_component_weights(weights) -> np.ndarray:
@@ -68,6 +70,7 @@ class TemporalWindowEnsemble(BaseEstimator, ClassifierMixin):
             hist_weight=self.hist_weight,
             n_estimators=self.n_estimators,
             random_state=self.random_state,
+            smoothing_lambdas=self.smoothing_lambdas,
         )
 
     def fit(self, X, y):
