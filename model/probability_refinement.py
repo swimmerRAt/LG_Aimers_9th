@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 from scipy.optimize import brentq
+from sklearn.utils.validation import check_is_fitted
 
 
 def _validated_inputs(probability, target, sample_weight=None):
@@ -121,3 +122,35 @@ class LogitInterceptCalibrator:
         if not hasattr(self, "intercept_"):
             raise ValueError("LogitInterceptCalibrator must be fitted before transform")
         return _sigmoid(_logit(probability) + self.intercept_)
+
+
+class RefinedProbabilityClassifier:
+    """Apply fitted rolling refinements to a fitted temporal classifier."""
+
+    def __init__(self, base_model, game_adjuster, calibrator, group_column="game_type"):
+        self.base_model = base_model
+        self.game_adjuster = game_adjuster
+        self.calibrator = calibrator
+        self.group_column = group_column
+        self.classes_ = np.asarray(base_model.classes_)
+        self.feature_names_in_ = np.asarray(base_model.feature_names_in_, dtype=object)
+
+    def predict_proba(self, X):
+        check_is_fitted(self.base_model, ["models_", "classes_"])
+        if self.group_column not in X.columns:
+            raise ValueError(f"input is missing refinement group column {self.group_column!r}")
+        classes = np.asarray(self.base_model.classes_)
+        position = np.flatnonzero(classes == 1)
+        if len(position) != 1:
+            raise ValueError("base model must expose positive class 1 exactly once")
+        raw = np.asarray(self.base_model.predict_proba(X)[:, int(position[0])], dtype=float)
+        by_game_type = self.game_adjuster.transform(raw, X[self.group_column])
+        positive = np.clip(self.calibrator.transform(by_game_type), 0.0, 1.0)
+        return np.column_stack([1.0 - positive, positive])
+
+    def feature_importance_frame(self):
+        return self.base_model.feature_importance_frame()
+
+    @property
+    def feature_importance_source(self) -> str:
+        return "Refined Temporal ExtraTrees weighted impurity importance"

@@ -113,7 +113,8 @@ TEST_000213,0.485205
 
 | 산출물 | 역할 |
 |---|---|
-| `model/final_model.pkl` | 보정하지 않은 기본 최종 앙상블 |
+| `model/final_model.pkl` | 시간창 앙상블 + `game_type` 및 Rolling 전체 확률 보정 최종 모델 |
+| `model/final_model_before_temporal_refinement.pkl` | 승격 전 단일 기간 HistGB+ExtraTrees 백업 |
 | `model/final_model_mild.pkl` | 2024 OOF 선형 보정을 50% 적용한 후보 |
 | `model/final_model_calibrated.pkl` | 2024 OOF 최적 선형 보정을 모두 적용한 후보 |
 | `artifacts/optimized_ensemble_2024/` | 검증 지표, OOF 예측, 실행 요약 |
@@ -204,7 +205,11 @@ validation을 사용한다. 최종 모델 선택의 주 검증은 2019~2023년 �
         ↓
 결측값 처리 및 범주형 인코딩
         ↓
-HistGB 45% + ExtraTrees 55% 확률 앙상블
+기간별 HistGB 45% + ExtraTrees 55% 모델 세 개
+        ↓
+전체·최근 3년·최근 2년 확률 앙상블
+        ↓
+game_type 축소 보정 및 Rolling 전체 확률 보정
         ↓
 2025년 각 투구의 제구 성공 확률 예측
         ↓
@@ -215,8 +220,10 @@ Brier Score 및 정규화 대회 점수 산출
 
 ## 7. 현재 모델과 성능 현황 (2026-08-17)
 
-현재 제출 모델은 `model/ensemble.py`의 `OptimizedBaseballEnsemble`이며, 두 모델이 동일한
-전처리 행렬을 공유한다.
+현재 제출 모델은 `model/probability_refinement.py`의 `RefinedProbabilityClassifier`다.
+내부의 `TemporalWindowEnsemble`이 기간별 `OptimizedBaseballEnsemble` 세 개를 결합하며,
+각 구성요소 안에서 HistGB와 ExtraTrees가 동일한 전처리 행렬을 공유한다. 이후
+`game_type`별 축소 로짓 절편과 전체 로짓 절편 보정을 차례대로 적용한다.
 
 ### 7.1 전처리
 
@@ -256,6 +263,8 @@ p_{final}=clip(a(0.45p_{HistGB}+0.55p_{ExtraTrees})+b,0,1)
 | 공식 리더보드 | 당시 1위 | 1,176.54904 | 정답 평균 비공개로 역산 불가 |
 | 2024 forward validation | 기존 HistGB | 576.61745 | 0.24836650 |
 | 2024 forward validation | 최적 앙상블 원본 | 700.25764 | 0.24805763 |
+| 2024 forward validation | 시간창 앙상블 원본 | 701.28755 | 0.24805506 |
+| 2024 forward validation | **현재 승격 모델 구조** | **723.33442** | **0.24799999** |
 | 2024 forward validation | 절반 확률 보정 후보 | 731.63033 | 0.24797926 |
 | 2024 forward validation | 완전 확률 보정 후보 | 742.08790 | 0.24795314 |
 
@@ -463,7 +472,9 @@ paired 95% 신뢰구간도 `[-0.00001370, +0.00000855]`로 0을 포함해 개선
 확실하지 않다. 모델 크기와 추론량은 약 세 배가 되는데 이득은 약 1점뿐이다. 따라서 구현과
 OOF 결과는 보존하지만 상태는
 `rejected_keep_single_window`로 두고 `model/final_model.pkl`은 기존 전체 기간 모델로
-유지한다.
+유지한다. 이후 사용자의 명시적 결정에 따라 시간창 앙상블과 두 후단 보정을 결합한
+`723.33442`점 후보가 별도 승격됐으며, 위 결론은 보정 전 시간창 앙상블만 비교했던 당시
+결과를 설명한다.
 
 2022~2024를 모두 사용한 2025용 진단 비중은 전체 76.0299%, 최근 3년 4.0732%, 최근 2년
 19.8969%, 시간가중 0%였으며 같은 2024에서 사후 평가한 점수는 701.82899이다. 이 값은
@@ -525,9 +536,14 @@ game_type별 축소 로짓 절편 보정
 
 smoothing을 제외한 두 후단 보정은 약 22.05점 개선됐으며 paired Brier 95% 신뢰구간은
 `[-0.00007272, -0.00003743]`으로 개선 방향이다. 다만 2024는 이전 모델 개발에서도 이미
-여러 번 확인한 시즌이므로 완전히 새로운 one-shot outer 검증으로 볼 수 없다. 따라서 이
-결과는 유력한 진단 후보로 보존하되 `model/final_model.pkl`을 자동 교체하지 않는다. 새로운
-시즌 검증이나 실제 리더보드 제출로 확인한 뒤 승격한다.
+여러 번 확인한 시즌이므로 완전히 새로운 one-shot outer 검증으로 볼 수 없다. 이 한계를
+기록한 상태에서 사용자의 명시적 결정으로 해당 후보를 `model/final_model.pkl`에 승격했다.
+승격 전 단일 기간 모델은 `model/final_model_before_temporal_refinement.pkl`로 보존한다.
+
+2019~2024년 전체 최종 학습에는 약 287.72초가 걸렸고 모델 파일은 약 107MB, 제출 ZIP은
+약 106MB다. 245,789행 반복 입력 스트레스 테스트에서 모델 로드·추론·출력 검증 핵심 시간은
+약 3.38초, 전체 프로세스 실측은 약 8.07초, 최대 RSS는 약 1.46GB였다. 이는 평가 서버의
+10분·28GB 제한 안에 충분히 들어온다.
 
 재현 명령과 결과 파일은 다음과 같다.
 
@@ -538,7 +554,7 @@ smoothing을 제외한 두 후단 보정은 약 22.05점 개선됐으며 paired 
   --fixed-development-weights 0.6673418251 0.1283550847 0.2043030902 \
   --fixed-final-weights 0.7602988964 0.0407317827 0.1989693209 \
   --skip-final-fit
-.venv/bin/python train_probability_refinement.py
+.venv/bin/python train_probability_refinement.py --fit-final
 ```
 
 - `artifacts/probability_refinement/blend_metrics.csv`

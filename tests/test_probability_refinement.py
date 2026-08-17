@@ -4,8 +4,13 @@ import unittest
 
 import numpy as np
 import pandas as pd
+from sklearn.base import BaseEstimator
 
-from model.probability_refinement import GameTypeLogitAdjuster, LogitInterceptCalibrator
+from model.probability_refinement import (
+    GameTypeLogitAdjuster,
+    LogitInterceptCalibrator,
+    RefinedProbabilityClassifier,
+)
 from train_probability_refinement import rolling_refinement
 
 
@@ -57,6 +62,33 @@ class ProbabilityRefinementTest(unittest.TestCase):
             first.loc[mask, ["game_type_corrected", "rolling_calibrated"]],
             second.loc[mask, ["game_type_corrected", "rolling_calibrated"]],
         )
+
+    def test_refined_classifier_applies_both_postprocessors(self):
+        class BaseModel(BaseEstimator):
+            classes_ = np.array([0, 1])
+            feature_names_in_ = np.array(["game_type"])
+            models_ = {"full": object()}
+
+            def fit(self, X, y=None):
+                return self
+
+            def predict_proba(self, X):
+                positive = np.full(len(X), 0.5)
+                return np.column_stack([1.0 - positive, positive])
+
+            def feature_importance_frame(self):
+                return np.array(["game_type"]), np.array([1.0])
+
+        game = GameTypeLogitAdjuster(strength=0.5, shrinkage=10.0).fit(
+            [0.4, 0.6, 0.4, 0.6], [0, 1, 0, 1], ["F", "F", "R", "R"]
+        )
+        calibration = LogitInterceptCalibrator(strength=0.25).fit(
+            [0.4, 0.6, 0.4, 0.6], [0, 1, 0, 1]
+        )
+        model = RefinedProbabilityClassifier(BaseModel(), game, calibration)
+        result = model.predict_proba(pd.DataFrame({"game_type": ["F", "R"]}))
+        self.assertEqual(result.shape, (2, 2))
+        np.testing.assert_allclose(result.sum(axis=1), 1.0)
 
 
 if __name__ == "__main__":

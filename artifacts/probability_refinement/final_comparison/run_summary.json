@@ -24,5 +24,9 @@
     "paired_ci95_low": -7.27229262699592e-05,
     "paired_ci95_high": -3.742630615353739e-05
   },
-  "decision": "reject smoothing; retain temporal ensemble and treat post-processing result as diagnostic until a fresh outer season or leaderboard confirms it"
+  "decision": "reject smoothing; promote temporal ensemble plus rolling game_type and global logit corrections by user decision",
+  "model_output": "model/final_model.pkl",
+  "final_fit_seconds": 287.71548395800346,
+  "backup_output": "model/final_model_before_temporal_refinement.pkl",
+  "model_size_mb": 107.04506301879883
 }

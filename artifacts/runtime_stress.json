@@ -1,13 +1,13 @@
 {
   "rows": 245789,
-  "model_load_seconds": 0.5164206250001371,
-  "inference_seconds": 0.19070120800006407,
-  "output_validation_seconds": 0.0570154580000235,
-  "total_core_seconds": 0.7641372910002246,
-  "rows_per_second": 1288869.6541446,
-  "max_rss_mib": 990.03125,
+  "model_load_seconds": 1.1261989170016022,
+  "inference_seconds": 2.1611461249995045,
+  "output_validation_seconds": 0.09142304200213403,
+  "total_core_seconds": 3.378768084003241,
+  "rows_per_second": 113730.85658428412,
+  "max_rss_mib": 1461.28125,
   "finite_probabilities": true,
-  "probability_min": 0.44757390150298754,
-  "probability_max": 0.5062710495511371,
+  "probability_min": 0.4256290896183059,
+  "probability_max": 0.5004475804661723,
   "note": "Rows repeat the 5-row schema sample; this measures scale, not distributional behavior."
 }
