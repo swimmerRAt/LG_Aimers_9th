@@ -1,0 +1,2 @@
+optimizer,success,message,iterations,objective,weighted_mean_relative_brier,relative_brier_std,full,recent_3,recent_2,time_weighted,relative_brier_2022,relative_brier_2023,relative_brier_2024
+SLSQP,True,Optimization terminated successfully,15,0.9981308108382868,0.9967277890685997,0.014030217696871234,0.7602988964169635,0.0407317826648403,0.1989693209181963,0.0,0.9770550357492062,1.0160864228288884,0.992981710140184

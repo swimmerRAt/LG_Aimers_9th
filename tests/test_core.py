@@ -48,6 +48,7 @@ class SubmissionTest(unittest.TestCase):
             "feature": ["long_feature_name", "other"],
             "importance": [0.7, 0.3],
             "importance_percent": [70.0, 30.0],
+            "source_component": ["ExtraTrees impurity importance"] * 2,
         })
         svg = render_feature_importance_svg(frame, top_n=2)
         self.assertIn("ExtraTrees Feature Importance", svg)

@@ -13,5 +13,8 @@ artifacts/oof_*.csv
 /artifacts/**/optuna.db
 /artifacts/**/optuna.db-*
 /artifacts/**/validation_models.pkl
+/artifacts/**/checkpoints/
+/artifacts/**/preprocessor.pkl
+/artifacts/**/cache/
 /artifacts/submissions/*.zip
 /artifacts/advanced_2024/

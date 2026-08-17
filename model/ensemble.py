@@ -32,7 +32,7 @@ class OptimizedBaseballEnsemble(BaseEstimator, ClassifierMixin):
         self.calibration_slope = calibration_slope
         self.calibration_intercept = calibration_intercept
 
-    def fit(self, X, y):
+    def fit(self, X, y, sample_weight=None):
         feature_columns = list(X.columns)
         categorical = [column for column in CATEGORICAL_COLUMNS if column in feature_columns]
         numeric = [column for column in feature_columns if column not in categorical]
@@ -62,7 +62,7 @@ class OptimizedBaseballEnsemble(BaseEstimator, ClassifierMixin):
             l2_regularization=5.0,
             early_stopping=False,
             random_state=self.random_state,
-        ).fit(transformed, y)
+        ).fit(transformed, y, sample_weight=sample_weight)
         self.extra_model_ = ExtraTreesClassifier(
             n_estimators=self.n_estimators,
             max_depth=16,
@@ -70,7 +70,7 @@ class OptimizedBaseballEnsemble(BaseEstimator, ClassifierMixin):
             max_features=0.8,
             n_jobs=-1,
             random_state=self.random_state,
-        ).fit(transformed, y)
+        ).fit(transformed, y, sample_weight=sample_weight)
         self.classes_ = np.asarray(self.hist_model_.classes_)
         self.feature_names_in_ = np.asarray(feature_columns, dtype=object)
         return self
@@ -111,3 +111,7 @@ class OptimizedBaseballEnsemble(BaseEstimator, ClassifierMixin):
         )
         order = np.argsort(-importance, kind="stable")
         return cleaned_names[order], importance[order]
+
+    @property
+    def feature_importance_source(self) -> str:
+        return "ExtraTrees impurity importance (55% of probability ensemble)"

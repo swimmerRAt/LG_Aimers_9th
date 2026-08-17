@@ -77,7 +77,7 @@ def build_submission(test: pd.DataFrame, sample: pd.DataFrame, predictions) -> p
 
 
 def feature_importance_frame(model) -> pd.DataFrame | None:
-    """Extract the fitted ExtraTrees importance exposed by the final ensemble."""
+    """Extract feature importance exposed by the fitted final model."""
     method = getattr(model, "feature_importance_frame", None)
     if method is None:
         return None
@@ -93,7 +93,11 @@ def feature_importance_frame(model) -> pd.DataFrame | None:
     frame = frame.sort_values("importance", ascending=False, kind="stable").reset_index(drop=True)
     frame.insert(0, "rank", np.arange(1, len(frame) + 1))
     frame["importance_percent"] = 100.0 * frame["importance"]
-    frame["source_component"] = "ExtraTrees"
+    frame["source_component"] = getattr(
+        model,
+        "feature_importance_source",
+        type(model).__name__,
+    )
     return frame
 
 
@@ -104,6 +108,8 @@ def render_feature_importance_svg(frame: pd.DataFrame, top_n: int = 20) -> str:
     if missing:
         raise ValueError(f"feature importance frame missing columns: {sorted(missing)}")
     chart = frame.head(max(1, int(top_n))).reset_index(drop=True)
+    source = str(chart["source_component"].iloc[0]) if "source_component" in chart else "Model"
+    model_label = source.split(maxsplit=1)[0]
     width = 1400
     left = 470
     right = 155
@@ -124,7 +130,7 @@ def render_feature_importance_svg(frame: pd.DataFrame, top_n: int = 20) -> str:
         '.title{font-size:28px;font-weight:700}.subtitle{font-size:16px;fill:#566176}'
         '.label{font-size:15px}.value{font-size:14px;font-variant-numeric:tabular-nums}'
         '.tick{font-size:12px;fill:#6B7280}.note{font-size:14px;fill:#566176}</style>',
-        '<text class="title" x="48" y="48">ExtraTrees Feature Importance</text>',
+        f'<text class="title" x="48" y="48">{escape(model_label)} Feature Importance</text>',
         f'<text class="subtitle" x="48" y="78">Top {len(chart)} of {len(frame)} features · impurity-based importance</text>',
         '<text class="subtitle" x="48" y="104">Correlated features can split importance; use validation permutation before changing model weights.</text>',
     ]
@@ -151,7 +157,7 @@ def render_feature_importance_svg(frame: pd.DataFrame, top_n: int = 20) -> str:
             f'<text class="value" x="{left + bar_width + 10:.1f}" y="{center_y + 5:.1f}">{percent:.3f}%</text>',
         ])
     parts.extend([
-        f'<text class="note" x="48" y="{height - 48}">Source: fitted ExtraTrees component (55% of the probability ensemble). Values sum to 100% across all features.</text>',
+        f'<text class="note" x="48" y="{height - 48}">Source: {escape(source)}. Values sum to 100% across all features.</text>',
         '</svg>',
     ])
     return "\n".join(parts)

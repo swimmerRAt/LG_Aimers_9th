@@ -35,3 +35,17 @@ def competition_score(y_true, y_prob) -> float:
         raise ValueError("competition score is undefined when validation has one class")
     return max(0.0, 100000.0 * (1.0 - brier_score(truth, prob) / reference))
 
+
+def paired_brier_comparison(y_true, baseline_prob, candidate_prob) -> dict[str, float]:
+    """Compare candidate-minus-baseline squared error on the same rows."""
+    truth, baseline = _validated_arrays(y_true, baseline_prob)
+    _, candidate = _validated_arrays(y_true, candidate_prob)
+    difference = np.square(candidate - truth) - np.square(baseline - truth)
+    standard_error = float(difference.std(ddof=1) / np.sqrt(len(difference)))
+    mean = float(difference.mean())
+    return {
+        "paired_brier_delta": mean,
+        "paired_standard_error": standard_error,
+        "paired_ci95_low": mean - 1.96 * standard_error,
+        "paired_ci95_high": mean + 1.96 * standard_error,
+    }

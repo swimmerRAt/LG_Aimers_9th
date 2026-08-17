@@ -378,6 +378,110 @@ paired Brier 차이의 95% 신뢰구간은 `[+0.00044383, +0.00058238]`로 전�
 학습이나 제출 모델로 사용하지 않는다. 이 실험은 2024 결과를 확인했으므로 잠겨 있으며
 동일 artifact 디렉터리에서 추가 trial이나 파라미터 변경을 하지 않는다.
 
+### XGBoost 분류 모델 비교
+
+Python 3.11 및 Apple Silicon과 호환되는 공식 `xgboost 3.2.0`을 사용해 현재 모델과 동일한
+2024 forward holdout에서 비교했다. 현재 앙상블과 피처 차이로 인한 혼동을 줄이기 위해
+동일한 33개 입력 피처와 동일한 학습·검증 행을 사용했다.
+
+- 목적함수: `binary:logistic`
+- tree method: CPU `hist`
+- 범주형: `top_bottom`, `game_type`, `base_state`를 학습 구간 기준 OOV-safe 원-핫 인코딩
+- 수치형: 학습 구간 중앙값 대치
+- 클래스 가중치: 미사용
+- early stopping: validation RMSE, patience 100. 이진 타깃에서는 `RMSE² = Brier`이므로
+  Brier와 동일한 iteration을 선택
+- 선택 설정: learning rate `0.03`, depth `6`, min child weight `100`, subsample `0.8`,
+  column sample `0.8`, L1 `0.1`, L2 `15`, 최대 2,000 trees
+
+깊이 4 기본 후보도 확인했으며 632.67736점이었다. 용량을 늘린 깊이 6 후보가 더 나았지만
+현재 모델을 넘지는 못했다. 최종 비교 결과는 다음과 같다.
+
+| 모델 | 선택 trees | Brier | 대회 환산 점수 | 현재 모델 대비 |
+| --- | ---: | ---: | ---: | ---: |
+| 현재 HistGB 45% + ExtraTrees 55% | - | **0.24805763** | **700.25764** | 기준 |
+| XGBoost depth 6 | 212 | 0.24818884 | 647.73609 | -52.52155점 |
+| 진단용 최적 블렌드 | - | 0.24805722 | 700.42557 | +0.16793점 |
+
+XGBoost의 candidate-minus-baseline Brier 차이는 `+0.00013120`이고 paired 95% 신뢰구간은
+`[+0.00008426, +0.00017815]`로 전체가 악화 방향이다. 2024에서 사후 계산한 진단용 최적
+블렌드는 XGBoost 비중이 `5.3438%`에 불과하고 개선 폭도 0.17점뿐이다. 이는 별도 패키지와
+모델을 제출물에 추가할 만큼 충분한 이득이 아니며 같은 2024 데이터에서 비중을 선택한
+낙관 편향도 있다. 따라서 상태는 `rejected_keep_baseline`이고 `model/final_model.pkl`은
+변경하지 않는다.
+
+`xgboost`는 현재 공식 제출용 `requirements.txt`의 기본 패키지가 아니므로 이번 결과는 로컬
+비교 후보로만 사용한다. 향후 성능상 채택할 이유가 생기더라도 먼저 평가 서버의 외부 패키지
+설치 허용 여부를 확인해야 한다.
+
+재현 명령과 결과 파일은 다음과 같다.
+
+```bash
+.venv/bin/pip install -r requirements-xgboost.txt
+.venv/bin/python train_xgboost.py --skip-final-fit
+```
+
+- `artifacts/xgboost_2024/metrics.csv`
+- `artifacts/xgboost_2024/run_summary.json`
+- `artifacts/xgboost_2024/feature_importance.csv`
+- `artifacts/xgboost_2024/feature_importance.svg`
+- 대용량 `oof_predictions.csv`는 Git에서 제외
+
+### 학습 기간을 달리한 시간창 앙상블 비교
+
+동일한 HistGB 45% + ExtraTrees 55% 모델을 전체 기간, 최근 3년, 최근 2년의 세 방식으로
+학습하는 `TemporalWindowEnsemble`을 구현했다. 각 검증 시즌에는 그보다 과거인 행만
+사용했다. 초기 실험에서 시간가중 모델은 모든 개발 fold에서 열세였으므로 최종 비중 탐색과
+학습에서 제외했다.
+
+| 검증 시즌 | 전체 기간 | 최근 3년 | 최근 2년 |
+| ---: | ---: | ---: | ---: |
+| 2022 | 2291.69465 | 2291.69465 | 2280.82584 |
+| 2023 | 0 | 0 | 0 |
+| 2024 | **700.25764** | 674.67912 | 674.28650 |
+
+비중은 5% 격자가 아니라 SLSQP 연속 최적화를 사용한다. 각 비중은 0 이상이고 합계는 정확히
+1이 되도록 제한하며, 목적함수는 2022 40%·2023 60%의 정규화 Brier와 시즌 간 안정성
+페널티를 합친 값이다. 2024를 열기 전에 선택한 바깥 검증용 비중은 다음과 같다.
+
+| 구성요소 | 비중 |
+| --- | ---: |
+| 전체 기간 | 66.7342% |
+| 최근 3년 | 12.8355% |
+| 최근 2년 | 20.4303% |
+| 시간가중 | 0% |
+
+이 비중을 고정한 2024 outer 결과는 다음과 같다.
+
+| 모델 | Brier | 대회 환산 점수 | 기존 대비 |
+| --- | ---: | ---: | ---: |
+| 기존 전체 기간 모델 | **0.24805763** | 700.25764 | 기준 |
+| 연속 최적 시간창 앙상블 | 0.24805506 | 701.28755 | +1.02991점 |
+
+Brier 개선은 `0.00000257`로 사전에 정한 최소 개선량 `0.00002000`의 약 12.9%에 불과하다.
+paired 95% 신뢰구간도 `[-0.00001370, +0.00000855]`로 0을 포함해 개선이 통계적으로
+확실하지 않다. 모델 크기와 추론량은 약 세 배가 되는데 이득은 약 1점뿐이다. 따라서 구현과
+OOF 결과는 보존하지만 상태는
+`rejected_keep_single_window`로 두고 `model/final_model.pkl`은 기존 전체 기간 모델로
+유지한다.
+
+2022~2024를 모두 사용한 2025용 진단 비중은 전체 76.0299%, 최근 3년 4.0732%, 최근 2년
+19.8969%, 시간가중 0%였으며 같은 2024에서 사후 평가한 점수는 701.82899이다. 이 값은
+2024 정답을 비중 선택에 사용했으므로 일반화 점수로 해석하지 않는다.
+
+재현 명령과 결과 파일은 다음과 같다.
+
+```bash
+.venv/bin/python train_temporal_ensemble.py
+```
+
+- `artifacts/temporal_ensemble/component_metrics.csv`
+- `artifacts/temporal_ensemble/blend_metrics.csv`
+- `artifacts/temporal_ensemble/development_weight_optimization.csv`
+- `artifacts/temporal_ensemble/final_weight_optimization.csv`
+- `artifacts/temporal_ensemble/run_summary.json`
+- 대용량 OOF와 구성요소 캐시는 Git에서 제외
+
 ## 8. 재현 및 제출 명령
 
 기존 단일-2024 Optuna 탐색과 사후 다년 검증은 아래 명령으로 재현할 수 있지만, 신규 모델

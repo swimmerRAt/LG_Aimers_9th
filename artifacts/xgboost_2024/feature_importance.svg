@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1400" viewBox="0 0 1400 1400">
+<rect width="100%" height="100%" fill="#FFFFFF"/>
+<style>text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;fill:#172033}.title{font-size:28px;font-weight:700}.subtitle{font-size:16px;fill:#566176}.label{font-size:15px}.value{font-size:14px;font-variant-numeric:tabular-nums}.tick{font-size:12px;fill:#6B7280}.note{font-size:14px;fill:#566176}</style>
+<text class="title" x="48" y="48">XGBoost Feature Importance</text>
+<text class="subtitle" x="48" y="78">Top 20 of 42 features · impurity-based importance</text>
+<text class="subtitle" x="48" y="104">Correlated features can split importance; use validation permutation before changing model weights.</text>
+<line x1="470.0" y1="138" x2="470.0" y2="1278" stroke="#E5E7EB" stroke-width="1"/>
+<text class="tick" x="470.0" y="128" text-anchor="middle">0.0%</text>
+<line x1="663.8" y1="138" x2="663.8" y2="1278" stroke="#E5E7EB" stroke-width="1"/>
+<text class="tick" x="663.8" y="128" text-anchor="middle">9.0%</text>
+<line x1="857.5" y1="138" x2="857.5" y2="1278" stroke="#E5E7EB" stroke-width="1"/>
+<text class="tick" x="857.5" y="128" text-anchor="middle">17.9%</text>
+<line x1="1051.2" y1="138" x2="1051.2" y2="1278" stroke="#E5E7EB" stroke-width="1"/>
+<text class="tick" x="1051.2" y="128" text-anchor="middle">26.9%</text>
+<line x1="1245.0" y1="138" x2="1245.0" y2="1278" stroke="#E5E7EB" stroke-width="1"/>
+<text class="tick" x="1245.0" y="128" text-anchor="middle">35.8%</text>
+<text class="label" x="454" y="183.0" text-anchor="end">game_type_F</text>
+<rect x="470" y="163.0" width="775.0" height="30" rx="3" fill="#2563EB"/>
+<text class="value" x="1255.0" y="183.0">35.832%</text>
+<text class="label" x="454" y="239.0" text-anchor="end">game_type_R</text>
+<rect x="470" y="219.0" width="337.4" height="30" rx="3" fill="#2563EB"/>
+<text class="value" x="817.4" y="239.0">15.602%</text>
+<text class="label" x="454" y="295.0" text-anchor="end">season</text>
+<rect x="470" y="275.0" width="169.7" height="30" rx="3" fill="#2563EB"/>
+<text class="value" x="649.7" y="295.0">7.848%</text>
+<text class="label" x="454" y="351.0" text-anchor="end">asof_pitcher_success_rate</text>
+<rect x="470" y="331.0" width="158.9" height="30" rx="3" fill="#2563EB"/>
+<text class="value" x="638.9" y="351.0">7.347%</text>
+<text class="label" x="454" y="407.0" text-anchor="end">asof_pitcher_reverse_rate</text>
+<rect x="470" y="387.0" width="56.7" height="30" rx="3" fill="#2563EB"/>
+<text class="value" x="536.7" y="407.0">2.621%</text>
+<text class="label" x="454" y="463.0" text-anchor="end">asof_batter_success_rate</text>
+<rect x="470" y="443.0" width="30.6" height="30" rx="3" fill="#2563EB"/>
+<text class="value" x="510.6" y="463.0">1.414%</text>
+<text class="label" x="454" y="519.0" text-anchor="end">pitcher_hand</text>
+<rect x="470" y="499.0" width="27.7" height="30" rx="3" fill="#2563EB"/>
+<text class="value" x="507.7" y="519.0">1.283%</text>
+<text class="label" x="454" y="575.0" text-anchor="end">asof_pitcher_ball_rate</text>
+<rect x="470" y="555.0" width="27.2" height="30" rx="3" fill="#2563EB"/>
+<text class="value" x="507.2" y="575.0">1.258%</text>
+<text class="label" x="454" y="631.0" text-anchor="end">batter_hand</text>
+<rect x="470" y="611.0" width="25.7" height="30" rx="3" fill="#2563EB"/>
+<text class="value" x="505.7" y="631.0">1.189%</text>
+<text class="label" x="454" y="687.0" text-anchor="end">batter_team_id</text>
+<rect x="470" y="667.0" width="24.7" height="30" rx="3" fill="#2563EB"/>
+<text class="value" x="504.7" y="687.0">1.142%</text>
+<text class="label" x="454" y="743.0" text-anchor="end">asof_pitcher_prev5_game_success_rate</text>
+<rect x="470" y="723.0" width="23.9" height="30" rx="3" fill="#2563EB"/>
+<text class="value" x="503.9" y="743.0">1.107%</text>
+<text class="label" x="454" y="799.0" text-anchor="end">balls_before</text>
+<rect x="470" y="779.0" width="23.7" height="30" rx="3" fill="#2563EB"/>
+<text class="value" x="503.7" y="799.0">1.096%</text>
+<text class="label" x="454" y="855.0" text-anchor="end">strikes_before</text>
+<rect x="470" y="835.0" width="23.5" height="30" rx="3" fill="#2563EB"/>
+<text class="value" x="503.5" y="855.0">1.084%</text>
+<text class="label" x="454" y="911.0" text-anchor="end">pitcher_team_id</text>
+<rect x="470" y="891.0" width="23.4" height="30" rx="3" fill="#2563EB"/>
+<text class="value" x="503.4" y="911.0">1.080%</text>
+<text class="label" x="454" y="967.0" text-anchor="end">asof_pitcher_prev1_game_success_rate</text>
+<rect x="470" y="947.0" width="23.1" height="30" rx="3" fill="#2563EB"/>
+<text class="value" x="503.1" y="967.0">1.070%</text>
+<text class="label" x="454" y="1023.0" text-anchor="end">asof_pitcher_prev3_game_success_rate</text>
+<rect x="470" y="1003.0" width="22.5" height="30" rx="3" fill="#2563EB"/>
+<text class="value" x="502.5" y="1023.0">1.042%</text>
+<text class="label" x="454" y="1079.0" text-anchor="end">asof_pitcher_n</text>
+<rect x="470" y="1059.0" width="20.7" height="30" rx="3" fill="#2563EB"/>
+<text class="value" x="500.7" y="1079.0">0.959%</text>
+<text class="label" x="454" y="1135.0" text-anchor="end">asof_pitcher_offspeed_rate</text>
+<rect x="470" y="1115.0" width="18.7" height="30" rx="3" fill="#2563EB"/>
+<text class="value" x="498.7" y="1135.0">0.865%</text>
+<text class="label" x="454" y="1191.0" text-anchor="end">inning</text>
+<rect x="470" y="1171.0" width="17.8" height="30" rx="3" fill="#2563EB"/>
+<text class="value" x="497.8" y="1191.0">0.823%</text>
+<text class="label" x="454" y="1247.0" text-anchor="end">base_state_12_</text>
+<rect x="470" y="1227.0" width="17.2" height="30" rx="3" fill="#2563EB"/>
+<text class="value" x="497.2" y="1247.0">0.797%</text>
+<text class="note" x="48" y="1352">Source: XGBoost gain. Values sum to 100% across all features.</text>
+</svg>
