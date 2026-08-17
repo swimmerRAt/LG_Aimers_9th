@@ -118,6 +118,8 @@ TEST_000213,0.485205
 | `model/final_model_calibrated.pkl` | 2024 OOF 최적 선형 보정을 모두 적용한 후보 |
 | `artifacts/optimized_ensemble_2024/` | 검증 지표, OOF 예측, 실행 요약 |
 | `artifacts/submissions/submit_*.zip` | 원본·절반 보정·완전 보정 제출 파일 |
+| `output/feature_importance.csv` | ExtraTrees 기준 전체 33개 피처 중요도와 순위 |
+| `output/feature_importance.svg` | 중요도 상위 20개 가로 막대그래프 |
 
 ## 4. 성능지표
 
@@ -211,7 +213,7 @@ output/submission.csv 생성
 Brier Score 및 정규화 대회 점수 산출
 ```
 
-## 7. 현재 모델과 성능 현황 (2026-08-15)
+## 7. 현재 모델과 성능 현황 (2026-08-17)
 
 현재 제출 모델은 `model/ensemble.py`의 `OptimizedBaseballEnsemble`이며, 두 모델이 동일한
 전처리 행렬을 공유한다.
@@ -266,7 +268,161 @@ p_{final}=clip(a(0.45p_{HistGB}+0.55p_{ExtraTrees})+b,0,1)
 새 모델의 공식 점수는 실제 ZIP을 제출한 뒤에만 확정된다. 제출 후보는
 `artifacts/submissions/` 아래에 원본, 절반 보정, 완전 보정 순으로 구분되어 있다.
 
+### 7.4 Optuna 하이퍼파라미터 탐색
+
+2024년 forward validation의 Brier Score를 목적함수로 HistGradientBoosting 20회,
+ExtraTrees 10회, 앙상블 가중치와 선형 확률 보정 200회를 탐색했다. Optuna는 로컬 튜닝에만
+사용하며 평가 서버의 제출 ZIP에는 포함하지 않는다.
+
+| 구성 요소 | Optuna 최적값 |
+|---|---|
+| HistGradientBoosting | learning rate `0.04`, iterations `300`, leaf nodes `31`, min leaf `200`, L2 `5.0`, max bins `255` |
+| ExtraTrees | trees `160`, max depth `21`, min leaf `185`, max features `0.7`, criterion `log_loss` |
+| 보정 없는 앙상블 | HistGB `0.368`, ExtraTrees `0.632` |
+| 2024 전용 완전 보정 | HistGB `0.37669218`, ExtraTrees `0.62330782`, slope `1.12054610`, intercept `-0.06608570` |
+
+| 검증 시즌 | 후보 | 점수 | Brier | 평균 예측 확률 |
+|---:|---|---:|---:|---:|
+| 2022 | 현재 원본 | 2,291.69464 | 0.243454 | 0.529535 |
+| 2022 | Optuna 원본 | **2,302.23385** | **0.243427** | 0.530064 |
+| 2022 | Optuna 2024 완전 보정 | 2,277.74644 | 0.243488 | 0.527839 |
+| 2023 | 현재 원본 | 0 | **0.254026** | 0.521528 |
+| 2023 | Optuna 원본 | 0 | 0.254038 | 0.521933 |
+| 2023 | Optuna 2024 완전 보정 | 0 | 0.254975 | 0.518725 |
+| 2024 | 현재 원본 | 700.25764 | 0.24805763 | 0.495034 |
+| 2024 | Optuna 원본 | **704.53533** | **0.24804695** | 0.495079 |
+| 2024 | Optuna 2024 완전 보정 | **746.08757** | **0.24794315** | 0.488681 |
+
+Optuna 원본은 2022년과 2024년에 개선됐지만 2023년에는 Brier가 `0.000012` 악화됐다.
+반면 2024 정답에 직접 맞춘 완전 보정은 2022년과 2023년 모두 악화되어 숨겨진 2025년에
+그대로 적용할 근거가 부족하다. 따라서 현재 결론은 **ExtraTrees 설정과 원본 앙상블
+가중치는 신규 후보로 유지하고, 2024 완전 보정은 최종 모델에 자동 승격하지 않는다**이다.
+Optuna만으로 얻은 2024 원본 점수 증가는 약 `+4.28점`이므로 목표 1,000점까지는 새로운
+피처나 시간 드리프트 대응이 추가로 필요하다.
+
+### 7.5 다중 시즌 robust Optuna 재설계
+
+기존 탐색은 2024년 한 개 holdout을 반복 사용했기 때문에 선택 편향이 생길 수 있었다.
+새 `optimize_hyperparameters_robust.py`는 파라미터 선택과 최종 검증을 다음처럼 분리한다.
+
+| 역할 | 순방향 split | Optuna 접근 여부 |
+|---|---|---|
+| 내부 튜닝 | 2019~2020 → 2021 | 접근함 |
+| 내부 튜닝 | 2019~2021 → 2022 | 접근함 |
+| 내부 튜닝 | 2019~2022 → 2023 | 접근함 |
+| 외부 최종 검증 | 2019~2023 → 2024 | 파라미터 동결 후 한 번만 접근 |
+
+시즌마다 실제 성공률이 다르므로 단순 Brier 평균 대신 시즌별 상수확률 기준선으로
+정규화한 손실을 사용한다.
+
+\[
+L_s=\frac{Brier_s}{r_s(1-r_s)}
+\]
+
+기본 robust 목적함수는 최근 시즌에 더 큰 비중을 주고 시즌 간 불안정성에 페널티를 준다.
+
+\[
+J=0.15L_{2021}+0.30L_{2022}+0.55L_{2023}
++0.25\,WeightedStd(L_{2021},L_{2022},L_{2023})
+\]
+
+HistGB와 ExtraTrees를 이 목적함수로 각각 탐색한 뒤, 동결된 두 모델의 내부 fold 예측으로
+앙상블 가중치만 다시 최적화한다. 2024 정답에 직접 맞춘 선형 확률 보정은 사용하지 않는다.
+ExtraTrees는 탐색과 최종 후보 평가에서 모두 160개 트리를 사용한다.
+
+2024 outer 평가가 시작되면 `outer_lock.json`을 먼저 생성한다. 이후 같은 artifact
+디렉터리에서는 trial을 추가하거나 파라미터를 다시 선택할 수 없다. 이미 생성된 outer
+결과를 다시 요청해도 모델을 재학습하지 않고 저장된 결과만 반환한다.
+
+후보는 다음 조건을 모두 만족해야 최종 전체 학습 대상으로 승인된다.
+
+- 내부 robust objective가 현재 기준 모델보다 낮음
+- 2024 Brier 개선량이 최소 `0.00002` 이상
+- 기존 모델과의 paired Brier 차이 95% 신뢰구간 상한이 0보다 작음
+
+### 7.6 Robust Optuna 내부 튜닝 결과 (2026-08-17)
+
+2024 outer holdout을 열지 않은 상태에서 HistGB 20회, ExtraTrees 20회, 앙상블 비중
+100회를 완료했다. 동결된 selection signature는 `827130b5ef3d866ec6d85ce1`이다.
+
+| 구성 요소 | 동결된 최적값 |
+|---|---|
+| HistGradientBoosting | learning rate `0.02267387`, iterations `150`, leaf nodes `7`, min leaf `151`, L2 `0.10103797`, max bins `255` |
+| ExtraTrees | trees `160`, max depth `11`, min leaf `388`, max features `0.4`, criterion `log_loss` |
+| Robust 앙상블 | HistGB `0.99987375`, ExtraTrees `0.00012625` |
+
+앙상블 탐색은 사실상 HistGB 단독을 선택했다. ExtraTrees 자체의 최적값은 기존보다 얕고
+강하게 규제됐지만, 세 내부 시즌에서 HistGB의 오차를 안정적으로 상쇄하지 못했다.
+
+| 검증 시즌 | 현재 기준 Brier | Robust Optuna Brier | Brier 변화 | 점수 변화 |
+|---:|---:|---:|---:|---:|
+| 2021 | 0.24593699 | **0.24575517** | -0.00018182 | +73.04 |
+| 2022 | **0.24345354** | 0.24376492 | +0.00031138 | -124.97 |
+| 2023 | 0.25402588 | **0.25298284** | -0.00104304 | 0점 절삭 유지 |
+
+최근 시즌 비중이 가장 큰 2023년의 Brier가 크게 개선되어 전체 robust objective는
+`1.00466492 → 1.00202448`로 `0.00264044` 감소했다. 반면 2022년은 악화됐으므로 모든
+시즌에서 우월한 모델은 아니다. 다음 단계인 2024 one-shot outer 검증에서 실제 일반화와
+paired 신뢰구간을 확인하기 전에는 최종 제출 모델로 승격하지 않는다.
+
+2024 one-shot outer 검증 결과 후보는 최종 게이트를 통과하지 못했다.
+
+| 2024 outer 후보 | 점수 | Brier | 평균 예측 확률 |
+|---|---:|---:|---:|
+| 현재 기준 모델 | **700.25764** | **0.24805763** | 0.49503365 |
+| Robust Optuna | 494.85698 | 0.24857074 | 0.49690649 |
+
+Robust 후보의 Brier는 기준 모델보다 `0.00051311` 악화됐고 점수는 `205.40066점` 낮았다.
+paired Brier 차이의 95% 신뢰구간은 `[+0.00044383, +0.00058238]`로 전체가 악화 방향이다.
+따라서 `outer_evaluation.json`의 상태는 `rejected_keep_baseline`이며, robust 후보를 최종
+학습이나 제출 모델로 사용하지 않는다. 이 실험은 2024 결과를 확인했으므로 잠겨 있으며
+동일 artifact 디렉터리에서 추가 trial이나 파라미터 변경을 하지 않는다.
+
 ## 8. 재현 및 제출 명령
+
+기존 단일-2024 Optuna 탐색과 사후 다년 검증은 아래 명령으로 재현할 수 있지만, 신규 모델
+선택에는 사용하지 않는다. 완료된 기본 모델 trial은
+`artifacts/optuna_2024/optuna.db`에서 재개되며, 대용량 DB·OOF·검증 모델은 Git에서
+제외된다.
+
+```bash
+.venv/bin/pip install -r requirements-tuning.txt
+.venv/bin/python optimize_hyperparameters.py
+.venv/bin/python validate_optuna_candidate.py
+```
+
+최적값과 전체 trial 기록은 `artifacts/optuna_2024/best_params.json`,
+`histgb_trials.csv`, `extra_trees_trials.csv`, `ensemble_trials.csv`에 저장된다.
+
+신규 robust 탐색은 먼저 `tune`만 실행한다. 기본 설정은 HistGB 20회, ExtraTrees 20회,
+앙상블 가중치 100회이며 세 내부 fold를 모두 학습하므로 기존 탐색보다 오래 걸린다.
+
+```bash
+.venv/bin/python optimize_hyperparameters_robust.py tune \
+  --artifact-dir artifacts/optuna_robust \
+  --inner-seasons 2021 2022 2023 \
+  --inner-weights 0.15 0.30 0.55 \
+  --outer-season 2024 \
+  --stability-penalty 0.25 \
+  --hist-trials 20 \
+  --extra-trials 20 \
+  --blend-trials 100 \
+  --n-estimators 160
+```
+
+`selection.json`과 `inner_fold_metrics.csv`를 검토하고 trial 수를 더 늘릴 필요가 있다면
+**outer 평가 전에만** 같은 `tune` 명령의 총 trial 수를 높여 재개한다. 탐색을 완전히
+종료한 뒤 다음 명령을 정확히 한 번 실행한다.
+
+```bash
+.venv/bin/python optimize_hyperparameters_robust.py evaluate-outer \
+  --artifact-dir artifacts/optuna_robust \
+  --min-brier-improvement 0.00002
+```
+
+결과는 `outer_evaluation.json`에 저장되고 이후 해당 디렉터리는 잠긴다. 새로운 가설이나
+탐색 범위를 시험하려면 2024 결과에 맞춰 기존 실험을 수정하지 말고, 사전에 설정을 정한
+새 artifact 디렉터리를 사용한다.
 
 최종 원본 모델을 다시 학습하고 2024 OOF 산출물을 생성한다.
 
@@ -298,8 +454,12 @@ mkdir -p artifacts/submissions
 ```
 
 평가 서버의 `script.py`는 `data/` 또는 `open/`에서 `test.csv`와
-`sample_submission.csv`를 찾고, 모델을 불러와 `output/submission.csv`를 생성한다. 제출
-우선순위는 숨겨진 2025 분포에 대한 과보정 위험을 고려해 `raw → mild → calibrated`다.
+`sample_submission.csv`를 찾고, 모델을 불러와 `output/submission.csv`,
+`output/feature_importance.csv`, `output/feature_importance.svg`를 생성한다. 중요도는 앙상블
+전체의 인과적 기여도가 아니라 ExtraTrees 구성요소의 impurity importance다. 상관된 피처는
+중요도를 나눠 가질 수 있으므로 중요도만 보고 가중치를 직접 조절하지 않고, 다음 단계에서
+2024 검증 데이터의 permutation importance 및 피처 상관도와 함께 판단한다. 제출 우선순위는
+숨겨진 2025 분포에 대한 과보정 위험을 고려해 `raw → mild → calibrated`다.
 
 최종 모델 학습에 기록된 환경은 Python 3.11.15, pandas 2.0.3, NumPy 1.26.4,
 scikit-learn 1.8.0, joblib 1.5.3이다.

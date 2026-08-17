@@ -1,0 +1,60 @@
+{
+  "validation_season": 2024,
+  "train_rows": 1221585,
+  "validation_rows": 253507,
+  "validation_target_rate": 0.4861049201797189,
+  "histgb": {
+    "params": {
+      "learning_rate": 0.04,
+      "max_iter": 300,
+      "max_leaf_nodes": 31,
+      "min_samples_leaf": 200,
+      "l2_regularization": 5.0,
+      "max_bins": 255
+    },
+    "brier": 0.2481932114836614,
+    "competition_score": 645.9849989258637,
+    "prediction_mean": 0.4955905749520706,
+    "fit_seconds": 20.769855250000546
+  },
+  "extra_trees": {
+    "params": {
+      "max_depth": 21,
+      "min_samples_leaf": 185,
+      "max_features": 0.7000000000000001,
+      "criterion": "log_loss",
+      "n_estimators": 160
+    },
+    "brier": 0.24809647612252153,
+    "competition_score": 684.7090496940989,
+    "prediction_mean": 0.49478078854068186,
+    "fit_seconds": 126.37710912499824
+  },
+  "raw_ensemble": {
+    "hist_weight": 0.368,
+    "extra_weight": 0.632,
+    "brier": 0.24804694870074934,
+    "competition_score": 704.5353301000201,
+    "prediction_mean": 0.4950787899400729
+  },
+  "calibrated_ensemble": {
+    "params": {
+      "hist_weight": 0.376692175254892,
+      "calibration_slope": 1.1205461046007568,
+      "calibration_intercept": -0.06608569574096923
+    },
+    "brier": 0.2479431483179918,
+    "competition_score": 746.0875737087757,
+    "prediction_mean": 0.4886808011028155
+  },
+  "search": {
+    "hist_trials": 20,
+    "extra_trials": 10,
+    "ensemble_trials": 200,
+    "extra_search_estimators": 60,
+    "preprocess_seconds": 2.3990159579989268,
+    "seed": 42,
+    "storage": "/Users/suyeong/Projects/personal/LG_Aimers/artifacts/optuna_2024/optuna.db"
+  },
+  "caveat": "Parameters are optimized on the 2024 holdout and require 2022/2023 forward validation before promotion."
+}

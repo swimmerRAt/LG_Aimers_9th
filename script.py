@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import os
 import time
+from html import escape
 from pathlib import Path
 
 import joblib
@@ -75,6 +76,98 @@ def build_submission(test: pd.DataFrame, sample: pd.DataFrame, predictions) -> p
     return pd.DataFrame({ID_COL: sample[ID_COL].to_numpy(), TARGET_COL: aligned})
 
 
+def feature_importance_frame(model) -> pd.DataFrame | None:
+    """Extract the fitted ExtraTrees importance exposed by the final ensemble."""
+    method = getattr(model, "feature_importance_frame", None)
+    if method is None:
+        return None
+    names, importance = method()
+    frame = pd.DataFrame({
+        "feature": np.asarray(names, dtype=str),
+        "importance": np.asarray(importance, dtype=float),
+    })
+    if frame.empty or not np.isfinite(frame["importance"]).all():
+        raise ValueError("feature importance is empty or contains non-finite values")
+    if (frame["importance"] < 0).any():
+        raise ValueError("feature importance must be non-negative")
+    frame = frame.sort_values("importance", ascending=False, kind="stable").reset_index(drop=True)
+    frame.insert(0, "rank", np.arange(1, len(frame) + 1))
+    frame["importance_percent"] = 100.0 * frame["importance"]
+    frame["source_component"] = "ExtraTrees"
+    return frame
+
+
+def render_feature_importance_svg(frame: pd.DataFrame, top_n: int = 20) -> str:
+    """Render a dependency-free horizontal importance chart as SVG."""
+    required = {"feature", "importance", "importance_percent"}
+    missing = required - set(frame.columns)
+    if missing:
+        raise ValueError(f"feature importance frame missing columns: {sorted(missing)}")
+    chart = frame.head(max(1, int(top_n))).reset_index(drop=True)
+    width = 1400
+    left = 470
+    right = 155
+    top = 150
+    row_height = 56
+    bar_height = 30
+    bottom = 130
+    plot_width = width - left - right
+    height = top + len(chart) * row_height + bottom
+    maximum = float(chart["importance"].max())
+    if not np.isfinite(maximum) or maximum <= 0:
+        maximum = 1.0
+
+    parts = [
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
+        '<rect width="100%" height="100%" fill="#FFFFFF"/>',
+        '<style>text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;fill:#172033}'
+        '.title{font-size:28px;font-weight:700}.subtitle{font-size:16px;fill:#566176}'
+        '.label{font-size:15px}.value{font-size:14px;font-variant-numeric:tabular-nums}'
+        '.tick{font-size:12px;fill:#6B7280}.note{font-size:14px;fill:#566176}</style>',
+        '<text class="title" x="48" y="48">ExtraTrees Feature Importance</text>',
+        f'<text class="subtitle" x="48" y="78">Top {len(chart)} of {len(frame)} features · impurity-based importance</text>',
+        '<text class="subtitle" x="48" y="104">Correlated features can split importance; use validation permutation before changing model weights.</text>',
+    ]
+    for tick in range(5):
+        fraction = tick / 4
+        x = left + fraction * plot_width
+        value = fraction * maximum * 100.0
+        parts.append(
+            f'<line x1="{x:.1f}" y1="{top - 12}" x2="{x:.1f}" y2="{height - bottom + 8}" '
+            'stroke="#E5E7EB" stroke-width="1"/>'
+        )
+        parts.append(
+            f'<text class="tick" x="{x:.1f}" y="{top - 22}" text-anchor="middle">{value:.1f}%</text>'
+        )
+    for index, row in chart.iterrows():
+        center_y = top + index * row_height + row_height / 2
+        y = center_y - bar_height / 2
+        bar_width = float(row["importance"]) / maximum * plot_width
+        feature = escape(str(row["feature"]))
+        percent = float(row["importance_percent"])
+        parts.extend([
+            f'<text class="label" x="{left - 16}" y="{center_y + 5:.1f}" text-anchor="end">{feature}</text>',
+            f'<rect x="{left}" y="{y:.1f}" width="{bar_width:.1f}" height="{bar_height}" rx="3" fill="#2563EB"/>',
+            f'<text class="value" x="{left + bar_width + 10:.1f}" y="{center_y + 5:.1f}">{percent:.3f}%</text>',
+        ])
+    parts.extend([
+        f'<text class="note" x="48" y="{height - 48}">Source: fitted ExtraTrees component (55% of the probability ensemble). Values sum to 100% across all features.</text>',
+        '</svg>',
+    ])
+    return "\n".join(parts)
+
+
+def write_feature_importance_outputs(model, output_dir: Path) -> tuple[Path, Path] | None:
+    frame = feature_importance_frame(model)
+    if frame is None:
+        return None
+    csv_path = output_dir / "feature_importance.csv"
+    svg_path = output_dir / "feature_importance.svg"
+    frame.to_csv(csv_path, index=False, encoding="utf-8")
+    svg_path.write_text(render_feature_importance_svg(frame), encoding="utf-8")
+    return csv_path, svg_path
+
+
 def main() -> None:
     started = time.perf_counter()
     root = Path(__file__).resolve().parent
@@ -94,8 +187,12 @@ def main() -> None:
     submission = build_submission(test, sample, predictions)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     submission.to_csv(output_path, index=False, encoding="utf-8")
+    importance_paths = write_feature_importance_outputs(model, output_path.parent)
     elapsed = time.perf_counter() - started
     print(f"saved {output_path} | rows={len(submission):,} | elapsed={elapsed:.2f}s")
+    if importance_paths is not None:
+        csv_path, svg_path = importance_paths
+        print(f"saved {csv_path} and {svg_path}")
 
 
 if __name__ == "__main__":

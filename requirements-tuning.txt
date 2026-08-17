@@ -1,0 +1,2 @@
+# Local optimization only; not included in the offline submission ZIP.
+optuna==4.9.0

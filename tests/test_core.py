@@ -5,7 +5,7 @@ import unittest
 import numpy as np
 import pandas as pd
 
-from script import build_submission
+from script import build_submission, render_feature_importance_svg
 from src.lg_aimers.metrics import brier_score, competition_score
 from src.lg_aimers.validation import make_season_forward_splits
 
@@ -42,6 +42,17 @@ class SubmissionTest(unittest.TestCase):
         sample = pd.DataFrame({"row_id": ["a", "b"], "control_success": [0.5, 0.5]})
         with self.assertRaises(ValueError):
             build_submission(test, sample, np.array([0.2]))
+
+    def test_feature_importance_svg_has_zero_based_ranked_bars(self):
+        frame = pd.DataFrame({
+            "feature": ["long_feature_name", "other"],
+            "importance": [0.7, 0.3],
+            "importance_percent": [70.0, 30.0],
+        })
+        svg = render_feature_importance_svg(frame, top_n=2)
+        self.assertIn("ExtraTrees Feature Importance", svg)
+        self.assertIn("long_feature_name", svg)
+        self.assertEqual(svg.count("<rect "), 3)  # background plus two bars
 
 
 if __name__ == "__main__":

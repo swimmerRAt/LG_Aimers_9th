@@ -1,4 +1,5 @@
 .venv/
+.DS_Store
 __pycache__/
 *.py[cod]
 .ipynb_checkpoints/
@@ -9,5 +10,8 @@ submit.zip
 artifacts/oof_*.csv
 /artifacts/forward_cv_2022_2024/oof_predictions.csv
 /artifacts/**/oof_predictions.csv
+/artifacts/**/optuna.db
+/artifacts/**/optuna.db-*
+/artifacts/**/validation_models.pkl
 /artifacts/submissions/*.zip
 /artifacts/advanced_2024/

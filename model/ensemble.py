@@ -96,3 +96,18 @@ class OptimizedBaseballEnsemble(BaseEstimator, ClassifierMixin):
         )
         return np.column_stack([1.0 - positive, positive])
 
+    def feature_importance_frame(self):
+        """Return fitted ExtraTrees impurity importance in descending order."""
+        check_is_fitted(self, ["preprocessor_", "extra_model_"])
+        names = self.preprocessor_.get_feature_names_out()
+        importance = np.asarray(self.extra_model_.feature_importances_, dtype=float)
+        if len(names) != len(importance):
+            raise ValueError(
+                f"feature name/importance mismatch: {len(names)} != {len(importance)}"
+            )
+        cleaned_names = np.asarray(
+            [name.split("__", 1)[-1] for name in names],
+            dtype=object,
+        )
+        order = np.argsort(-importance, kind="stable")
+        return cleaned_names[order], importance[order]

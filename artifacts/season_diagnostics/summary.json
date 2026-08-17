@@ -1,0 +1,15 @@
+{
+  "target_grain": "one pitch",
+  "target": "control_success",
+  "season_target_pearson_correlation": -0.048271968399461226,
+  "extra_trees_season_importance": 0.1623413686338282,
+  "extra_trees_trees": 160,
+  "trees_using_season": 160,
+  "season_split_count": 29866,
+  "all_internal_split_count": 818780,
+  "season_split_share": 0.03647622071863016,
+  "season_split_median_depth": 12.0,
+  "season_split_min_depth": 0,
+  "season_split_max_depth": 15,
+  "counterfactual_note": "Only season was changed; results measure model sensitivity, not causal effect."
+}

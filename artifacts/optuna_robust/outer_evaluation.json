@@ -1,0 +1,39 @@
+{
+  "status": "rejected_keep_baseline",
+  "evaluated_at": "2026-08-17T07:51:09.600774+00:00",
+  "selection_signature": "827130b5ef3d866ec6d85ce1",
+  "outer_season": 2024,
+  "baseline": {
+    "rows": 253507,
+    "target_rate": 0.4861049201797189,
+    "prediction_mean": 0.49503364662781657,
+    "brier": 0.24805763466941116,
+    "normalized_brier": 0.9929974236099549,
+    "competition_score": 700.257639004509
+  },
+  "robust_optuna": {
+    "rows": 253507,
+    "target_rate": 0.4861049201797189,
+    "prediction_mean": 0.49690649227262984,
+    "brier": 0.24857073975387672,
+    "normalized_brier": 0.9950514302427058,
+    "competition_score": 494.85697572941854
+  },
+  "paired_comparison": {
+    "candidate_minus_baseline_brier": 0.0005131050844656359,
+    "standard_error": 3.5344285746753515e-05,
+    "ci95_low": 0.000443830284401999,
+    "ci95_high": 0.0005823798845292728,
+    "minimum_required_improvement": 2e-05
+  },
+  "gates": {
+    "inner_robust_objective_improved": true,
+    "minimum_effect_met": false,
+    "paired_ci_excludes_zero": false
+  },
+  "fit_seconds": {
+    "candidate": 60.931503332998545,
+    "baseline_additional": 143.83107541599747
+  },
+  "policy": "The outer result is immutable in this artifact directory. Failed candidates require a new pre-registered experiment and must not be retuned against this 2024 result."
+}
